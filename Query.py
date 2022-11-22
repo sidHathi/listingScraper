@@ -1,5 +1,4 @@
 from pydantic import BaseModel, ValidationError, validator
-from geopy.geocoders import Nominatim
 from geopy.location import Location
 from QueryParams import QueryParam
 from QueryParams import REType
@@ -17,13 +16,13 @@ class Query(BaseModel):
     def validate_bedrooms(cls, v):
         if v < 0 or v > 10:
             raise ValueError('must be within range [0, 10]')
-        return v.title()
+        return v
 
     @validator('priceRange')
     def validate_price_range(cls, v):
         if (len(v) < 2 or (v[0] >= v[1])):
             raise ValueError('must be of form [min, max]')
-        return v.title()
+        return v
 
     def getQueryParamDict(self) -> dict:
         return {
@@ -34,3 +33,6 @@ class Query(BaseModel):
             QueryParam.LeaseTerm: self.leaseTerm,
             QueryParam.LeaseDuration: self.leaseDuration
         }
+    
+    class Config:
+        arbitrary_types_allowed = True

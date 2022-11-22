@@ -92,6 +92,8 @@ class UrlService(ABC):
             constructedUrl += '/'
 
         for param in params:
+            if param is None:
+                continue
             constructedUrl += param
             constructedUrl += self.paramSeparator()
 

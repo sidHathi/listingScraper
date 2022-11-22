@@ -2,9 +2,11 @@ from UrlService import UrlService
 from geopy.location import Location
 from QueryParams import QueryParam, REType, LeaseTerm
 from Query import Query
+from typing import Any
+from UrlService import UrlFieldType
 
 class RentUrlService(UrlService):
-    def url(self) -> str:
+    def baseUrl(self) -> str:
         return 'https://www.rent.com/'
 
     def paramSeparator(self) -> str:
@@ -12,7 +14,9 @@ class RentUrlService(UrlService):
 
     def location(self, queryLocation: Location) -> list[str]:
         addr = queryLocation.raw['address']
-        return [addr.get('state'), addr.get('city', '')]
+        if 'city' not in addr or 'state' not in addr:
+            return []
+        return [addr['state'].lower(), addr['city'].lower()]
     
     def reType(self, param: REType) -> str:
         match(param):
@@ -47,16 +51,16 @@ class RentUrlService(UrlService):
             return 'short-term-available'
         return None
 
-    def composeUrl(self, query: Query):
+    def composeUrl(self, query: Query) -> dict[UrlFieldType, Any]:
         queryDict = query.getQueryParamDict();
-        locationArr = queryDict[QueryParam.Location]
+        locationArr = self.location(queryDict[QueryParam.Location])
         return {
-            'prefix': None,
-            'pathPrefixes': [
+            UrlFieldType.Prefix: None,
+            UrlFieldType.PathPrefixes: [
                 locationArr[0],
                 f"{locationArr[1]}-{self.reType(queryDict[QueryParam.REType])}"
             ],
-            'params': [
+            UrlFieldType.Params: [
                 self.bedrooms(queryDict[QueryParam.Bedrooms]),
                 self.priceRange(queryDict[QueryParam.PriceRange]),
                 self.leaseDuration(queryDict[QueryParam.LeaseDuration]),
