@@ -4,6 +4,12 @@ from QueryParams import QueryParam, REType, LeaseTerm
 from Query import Query
 
 class RentUrlService(UrlService):
+    def url(self) -> str:
+        return 'https://www.rent.com/'
+
+    def paramSeparator(self) -> str:
+        return '_'
+
     def location(self, queryLocation: Location) -> list[str]:
         addr = queryLocation.raw['address']
         return [addr.get('state'), addr.get('city', '')]
@@ -45,7 +51,7 @@ class RentUrlService(UrlService):
         queryDict = query.getQueryParamDict();
         locationArr = queryDict[QueryParam.Location]
         return {
-            'prefixes': [],
+            'prefix': None,
             'pathPrefixes': [
                 locationArr[0],
                 f"{locationArr[1]}-{self.reType(queryDict[QueryParam.REType])}"
