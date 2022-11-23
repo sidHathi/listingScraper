@@ -9,8 +9,9 @@ from typing import cast
 from Scrape import Scraper
 from ParsingModel import ParsingModel, TagModel
 from DBInterface import DBInterface
+import asyncio
 
-def main() -> None:
+async def main() -> None:
     service: UrlService = RentUrlService()
     geolocator = Nominatim(user_agent='housing_scraper')
     geocoded = geolocator.geocode('Boston, MA', exactly_one=True, addressdetails=True)
@@ -36,7 +37,7 @@ def main() -> None:
         'data-tid': 'pdp-link', 
         'data-tag_item': 'property_title'
     })
-    parsingModel = ParsingModel(targetTag=tagModel, requiresTagMap=False)
+    parsingModel = ParsingModel(targetTag=tagModel, requiresTagMap=False, listingFieldMaps={})
     dbInterface = DBInterface()
     scraper = Scraper(
         urlString ='https://www.rent.com', 
@@ -45,9 +46,11 @@ def main() -> None:
         parsingModel=parsingModel, 
         dbInterface = dbInterface
     )
-    scraper.htmlPull(query, 220)
-    print(scraper.htmlParse())
+    await scraper.searchHtmlPull(query, 60)
+    urls: list[str] = scraper.htmlParse()
+    print(urls)
+    await scraper.listingsScrape(urls, 60)
     
 
 if (__name__ == '__main__'):
-    sys.exit(main())
+    sys.exit(asyncio.run(main()))
