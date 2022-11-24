@@ -7,14 +7,19 @@ from geopy.location import Location
 from QueryParams import REType, LeaseTerm
 from typing import cast
 from Scrape import Scraper
-from ParsingModel import ParsingModel, TagModel
+from ParsingModel import ParsingModel
+from TagModel import TagModel
 from DBInterface import DBInterface
+from Listing import Listing
+from ListingService import ListingService
+from RentListingService import RentListingService
+from unitTests import testTagMapFollow, testRegexMatching
 import asyncio
 
 async def main() -> None:
     service: UrlService = RentUrlService()
     geolocator = Nominatim(user_agent='housing_scraper')
-    geocoded = geolocator.geocode('Boston, MA', exactly_one=True, addressdetails=True)
+    geocoded = geolocator.geocode('Seattle, WA', exactly_one=True, addressdetails=True)
     if geocoded is None:
         raise Exception('invalid location')
     queryLoc = cast(Location, geocoded)
@@ -25,9 +30,9 @@ async def main() -> None:
         location=queryLoc,
         reType=REType.Apartment,
         bedrooms=1,
-        priceRange=[0, 3000],
-        leaseDuration=0,
-        leaseTerm=LeaseTerm.LongTerm
+        priceRange=[0, 4000],
+        leaseDuration=None,
+        leaseTerm=LeaseTerm.ShortTerm
     )
     urlDict = service.composeUrl(query)
     print(urlDict)
@@ -37,20 +42,27 @@ async def main() -> None:
         'data-tid': 'pdp-link', 
         'data-tag_item': 'property_title'
     })
-    parsingModel = ParsingModel(targetTag=tagModel, requiresTagMap=False, listingFieldMaps={})
     dbInterface = DBInterface()
+    listingServce: ListingService = RentListingService()
+    parsingModel = ParsingModel(targetTag=tagModel, requiresTagMap=False, listingService=listingServce)
+
     scraper = Scraper(
         urlString ='https://www.rent.com', 
+        query=query,
         urlService=service, 
+        listingService=listingServce,
         paginationModel=None, 
         parsingModel=parsingModel, 
         dbInterface = dbInterface
     )
-    await scraper.searchHtmlPull(query, 60)
+    await scraper.searchHtmlPull(60)
     urls: list[str] = scraper.htmlParse()
     print(urls)
-    await scraper.listingsScrape(urls, 60)
-    
+    await scraper.listingsHtmlPull(urls, 60)
+    listings: list[Listing] = scraper.listingsScrape()
+    print(listings)
+    print(testTagMapFollow())
+    print(testRegexMatching())
 
 if (__name__ == '__main__'):
     sys.exit(asyncio.run(main()))

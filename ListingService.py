@@ -1,28 +1,53 @@
 from abc import ABC, abstractmethod
 from typing import Any
 from Listing import Listing, ListingField, ListingMap
+from TagModel import TagModel
+from geopy.location import Location
 
 class ListingService(ABC):
     @abstractmethod
-    def parseLocation(str) -> dict[str, Any]:
+    def parseName(self, nameStr: str) -> str:
         ...
 
     @abstractmethod
-    def parseBedroomRange(str) -> list[int]:
-        ...
-    
-    @abstractmethod
-    def parsePrice(str) -> int:
-        ...
-    
-    @abstractmethod
-    def parseShortestLease(str) -> int:
+    def parseLocation(self, locStr: str, queryVal: Any | None = None) -> Location:
         ...
 
     @abstractmethod
-    def getSpecialFieldName(self, field: ListingField) -> str:
+    def parseBedroomOptions(self, opts: str, queryVal: Any | None = None) -> list[int]:
+        ...
+    
+    @abstractmethod
+    def parsePrice(self, price: str, queryVal: Any | None = None) -> int:
+        ...
+    
+    @abstractmethod
+    def parseShortestLease(self, lease: str, queryVal: Any | None = None) -> int:
+        ...
+
+    @abstractmethod
+    def getFieldMaps(self) -> dict[ListingField, list[TagModel] | None]:
+        ...
+
+    @abstractmethod
+    def getSpecialFieldName(self, field: ListingField) -> str | None:
         ...
 
     def getFieldValue(self, listing: Listing, field: ListingField) -> Any:
         return listing.dict()[ListingMap[field]]
+
+    def parse(self, field: ListingField, val: str, queryVal: Any | None = None) -> Any:
+        match(field):
+            case ListingField.Name:
+                return self.parseName(val)
+            case ListingField.Location:
+                return self.parseLocation(val, queryVal)
+            case ListingField.Bedrooms:
+                return self.parseBedroomOptions(val, queryVal)
+            case ListingField.Price:
+                return self.parsePrice(val, queryVal)
+            case ListingField.ShortestLease:
+                return self.parseShortestLease(val, queryVal)
+            case _:
+                return None
     

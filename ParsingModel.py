@@ -1,9 +1,7 @@
 from pydantic import BaseModel
 from Listing import ListingField
-
-class TagModel(BaseModel):
-    tagType: str = 'a'
-    identifiers: dict[str, str] = {}
+from ListingService import ListingService
+from TagModel import TagModel
 
 class ParsingModel(BaseModel):
     '''
@@ -18,4 +16,7 @@ class ParsingModel(BaseModel):
     requiresTagMap: bool
 
     # Listing page parsing dict:
-    listingFieldMaps: dict[ListingField, list[TagModel]]
+    listingService: ListingService
+
+    class Config:
+        arbitrary_types_allowed = True

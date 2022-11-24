@@ -2,20 +2,100 @@ from ListingService import ListingService
 from typing import Any, cast
 from geopy.geocoders import Nominatim
 from geopy.location import Location
+import re
+from scrapingUtils import findIntegerListMonths, matchLeaseTermByKeyword
+from constants import keywordMap, termToMonthMap
+from QueryParams import LeaseTerm
+from Listing import ListingField
+from TagModel import TagModel
 
 class RentListingService(ListingService):
-    def parseLocation(self, locStr: str) -> dict[str, Any]:
+    def parseName(self, nameStr: str) -> str:
+        return nameStr
+
+    def parseLocation(self, locStr: str, queryVal: Any | None = None) -> Location:
         geolocator = Nominatim(user_agent='housing_scraper')
         geocoded = geolocator.geocode(locStr, exactly_one=True, addressdetails=True)
         if geocoded is None:
-            raise Exception('invalid location')
+            print(locStr)
+            print('invalid location')
+            assert(queryVal is not None)
+            return queryVal
         location: Location = cast(Location, geocoded)
         if location is None or 'address' not in location.raw:
             raise Exception('location cast failed')
-        return location.raw
+        return location
 
-    def parseBedroomOptions(self, opts: list[str]) -> list[int]:
+    def parseBedroomOptions(self, opts: str, queryVal: Any | None = None) -> list[int]:
         '''
         format {range Bed/Beds OR Studio}
         '''
-        return super().parseBedroomOptions(opts)
+        splitOpts = opts.split(' ')
+        if len(splitOpts) < 2:
+            return [0, 0] # must be 'Studio'
+        
+        valStr: str = splitOpts[0]
+        splitVal = re.split(r'[-–]', valStr)
+        lower = re.sub(r'(studio)', '0', splitVal[0], flags=re.IGNORECASE)
+        if len(splitVal) == 1:
+            return [int(lower), int(lower)]
+        upper = re.sub(r'(studio)', '0', splitVal[1], flags=re.IGNORECASE)
+        return [int(lower), int(upper)]
+
+    def parsePrice(self, price: str, queryVal: Any | None = None) -> int:
+        print(price)
+        numeric = re.sub(r'[^0-9]', '', price)
+        print(numeric)
+        if len(numeric) == 0:
+            return -1
+        return int(numeric)
+
+    def parseShortestLease(self, lease: str, queryVal: Any | None = None) -> int:
+        listMatches = findIntegerListMonths(lease)
+        if listMatches is not None and len(listMatches) > 0:
+            return min(listMatches)
+        elif queryVal is not None:
+            return int(queryVal)
+        elif len(matchLeaseTermByKeyword(lease, keywordMap)) > 0:
+            val: int | None = termToMonthMap[matchLeaseTermByKeyword(lease, keywordMap)[0]]
+            if val is not None:
+                return val
+        default = termToMonthMap[LeaseTerm.LongTerm]
+        assert(default is not None)
+        return default
+
+    def getFieldMaps(self) -> dict[ListingField, list[TagModel] | None]:
+        return {
+            ListingField.Name: [
+                TagModel(tagType=None, identifiers={
+                    'data-tid': 'property-title'
+                })
+            ],
+            ListingField.Location: [
+                TagModel(tagType='div', identifiers={
+                    'data-tid': 'pdpKeyInfo_address'
+                }),
+                TagModel(tagType='button', identifiers={})
+            ],
+            ListingField.REType: None, # use query val
+            ListingField.Bedrooms: [
+                TagModel(tagType='li', identifiers={
+                    'data-tid': 'pdpKeyInfo_bedText'
+                })
+            ],
+            ListingField.Price: [
+                TagModel(tagType='div', identifiers={
+                    'data-tid': 'pdpKeyInfo_price'
+                })
+            ],
+            ListingField.ShortestLease: [
+                TagModel(tagType='section', identifiers={
+                    'data-tag_section': 'leasing_terms'
+                })
+            ]
+        }
+
+    def getSpecialFieldName(self, field: ListingField) -> str | None:
+        return None
+
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 
