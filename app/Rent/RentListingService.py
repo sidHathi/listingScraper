@@ -1,13 +1,12 @@
-from ListingService import ListingService
+from ..interfaces.ListingService import ListingService
 from typing import Any, cast
 from geopy.geocoders import Nominatim
 from geopy.location import Location
 import re
-from scrapingUtils import findIntegerListMonths, matchLeaseTermByKeyword
-from constants import keywordMap, termToMonthMap
-from QueryParams import LeaseTerm
-from Listing import ListingField
-from TagModel import TagModel
+from ..scrapingUtils import findIntegerListMonths, matchLeaseTermByKeyword
+from ..constants import keywordMap, termToMonthMap
+from ..enums import ListingField, LeaseTerm
+from ..models.TagModel import TagModel
 
 class RentListingService(ListingService):
     def parseName(self, nameStr: str) -> str:
@@ -43,9 +42,7 @@ class RentListingService(ListingService):
         return [int(lower), int(upper)]
 
     def parsePrice(self, price: str, queryVal: Any | None = None) -> int:
-        print(price)
         numeric = re.sub(r'[^0-9]', '', price)
-        print(numeric)
         if len(numeric) == 0:
             return -1
         return int(numeric)
@@ -66,6 +63,7 @@ class RentListingService(ListingService):
 
     def getFieldMaps(self) -> dict[ListingField, list[TagModel] | None]:
         return {
+            ListingField.Url: None,
             ListingField.Name: [
                 TagModel(tagType=None, identifiers={
                     'data-tid': 'property-title'
@@ -92,7 +90,9 @@ class RentListingService(ListingService):
                 TagModel(tagType='section', identifiers={
                     'data-tag_section': 'leasing_terms'
                 })
-            ]
+            ],
+            ListingField.Pets: None, # use query val
+            ListingField.Transit: None # use query val
         }
 
     def getSpecialFieldName(self, field: ListingField) -> str | None:

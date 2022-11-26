@@ -1,5 +1,16 @@
 from enum import Enum
 
+class ListingField(Enum):
+    Url = 1
+    Name = 2
+    Location = 3
+    REType = 4
+    Bedrooms = 5
+    Price = 6
+    ShortestLease = 7
+    Pets = 8
+    Transit = 9
+
 class QueryParam(Enum):
     Location = 1
     REType = 2
@@ -7,6 +18,8 @@ class QueryParam(Enum):
     PriceRange = 4
     LeaseTerm = 5
     LeaseDuration = 6
+    Pets = 7
+    Transit = 8
     
 class REType(Enum):
     House = 1

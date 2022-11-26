@@ -1,17 +1,19 @@
 from bs4 import BeautifulSoup
-from UrlService import UrlService
-from Query import Query
-from Listing import Listing, ListingField, ListingMap
-from PaginationModel import PaginationModel
-from ParsingModel import ParsingModel
-from TagModel import TagModel
-from DBInterface import DBInterface
+from ..interfaces.UrlService import UrlService
+from ..models.Query import Query
+from ..models.Listing import Listing
+from ..enums import ListingField
+from ..constants import listingMap, fieldDefaults
+from ..models.PaginationModel import PaginationModel
+from ..models.ParsingModel import ParsingModel
+from ..models.TagModel import TagModel
+from ..DBInterface import DBInterface
 import requests
 from collections.abc import Iterable
 import asyncio
 from typing import Coroutine, Any
-from scrapingUtils import htmlPull, followTagMap
-from ListingService import ListingService
+from ..scrapingUtils import htmlPull, followTagMap
+from ..interfaces.ListingService import ListingService
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options as ChromeOptions
 
@@ -31,7 +33,7 @@ class Scraper:
         self.listingService: ListingService = listingService
 
         self.searchHtmlPages: list[BeautifulSoup] | None = None
-        self.listingHtmlPages: list[BeautifulSoup] | None = None
+        self.listingHtmlPages: dict[str, BeautifulSoup] | None = None
         self.paginationModel: PaginationModel | None = paginationModel
         self.parsingModel: ParsingModel = parsingModel
         self.dbInterface: DBInterface = dbInterface
@@ -53,7 +55,6 @@ class Scraper:
         soup = BeautifulSoup(baseHtml, 'html.parser')
         # ADD PAGINATION HERE
 
-        print(soup.prettify())
         self.searchHtmlPages = [soup]
         browser.quit()
         return
@@ -64,16 +65,22 @@ class Scraper:
         browser = webdriver.Chrome('chromedriver', options=opts)
         browser.maximize_window()
 
+        urlIdPairs: list[dict[str, Any]] = self.dbInterface.getListingUrls()
+        def getUrlFromPair(pair: dict[str, Any]):
+            return pair['url']
+        alreadyScraped: set[str] = set(list(map(getUrlFromPair, urlIdPairs)))
+
         concurrentScrapers: list[Coroutine] = []
         for url in urls:
-            concurrentScrapers.append(htmlPull(url, browser, timeout))
+            if url not in alreadyScraped:
+                concurrentScrapers.append(htmlPull(url, browser, timeout))
         
         rawPages = await asyncio.gather(*concurrentScrapers)
         def getSoup(page) -> BeautifulSoup:
             return BeautifulSoup(page, 'html.parser')
         pages: list[BeautifulSoup] = list(map(getSoup, rawPages))
         browser.quit()
-        self.listingHtmlPages = pages
+        self.listingHtmlPages = dict(zip(urls, pages))
 
 
     def htmlParse(self) -> list[str]:
@@ -112,18 +119,18 @@ class Scraper:
 
 
     def listingsScrape(self) -> list[Listing]:
-        '''
-        TO-DO: Implement as per https://sidhathi.notion.site/Scraper-Planning-0fc4a6229b534d87b0e0241fd7d27905
-        '''
         query = self.query
         pages = self.listingHtmlPages
         assert(pages is not None)
 
         fieldMaps : dict[ListingField, list[TagModel] | None] = self.parsingModel.listingService.getFieldMaps()
         listings: list[Listing] = []
-        for page in pages:
+        for url, page in pages.items():
             listingJson: dict[str, Any] = {}
             for field in ListingField:
+                if field == ListingField.Url:
+                    listingJson[listingMap[field]] = url
+                    continue
                 fieldMap: list[TagModel] | None = fieldMaps[field]
                 qField = query.getCorrespondingParam(field)
                 if qField is None:
@@ -132,12 +139,12 @@ class Scraper:
                     queryVal = query.getQueryParamDict()[qField]
                 if fieldMap is None:
                      assert(queryVal is not None)
-                     listingJson[ListingMap[field]] = queryVal
+                     listingJson[listingMap[field]] = queryVal
                      continue
                 matchingTags = followTagMap(fieldMap, page)
-                print(fieldMap)
-                print(len(matchingTags))
-                assert(len(matchingTags) == 1)
+                if len(matchingTags) < 1:
+                    listingJson[listingMap[field]] = fieldDefaults[field]
+                    continue
                 matchedTag = matchingTags[0]
                 specialField = self.listingService.getSpecialFieldName(field)
                 if specialField is None:
@@ -146,15 +153,19 @@ class Scraper:
                     valStr = matchedTag.get(specialField)
                     assert(valStr is not None and type(valStr) == 'str')
                 val = self.listingService.parse(field, str(valStr), queryVal)
-                listingJson[ListingMap[field]] = val
+                listingJson[listingMap[field]] = val
             listing = Listing(**listingJson)
             listings.append(listing)
         return listings
 
 
-    def executeQuery(self, query: Query) -> None:
-        '''
-        TO-DO: Implement as per https://sidhathi.notion.site/Scraper-Planning-0fc4a6229b534d87b0e0241fd7d27905
-        '''
-        return
+    async def executeQuery(self, query: Query | None = None, timeout: int = 60) -> None:
+        if query is not None:
+            self.query = query
+        await self.searchHtmlPull(timeout)
+        await self.listingsHtmlPull(self.htmlParse(), timeout)
+        listings: list[Listing] = self.listingsScrape()
+
+        for listing in listings:
+            self.dbInterface.addListing(listing)
 

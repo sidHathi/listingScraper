@@ -1,7 +1,9 @@
 from abc import ABC, abstractmethod
 from typing import Any
-from Listing import Listing, ListingField, ListingMap
-from TagModel import TagModel
+from ..models.Listing import Listing
+from ..enums import ListingField
+from ..constants import listingMap
+from ..models.TagModel import TagModel
 from geopy.location import Location
 
 class ListingService(ABC):
@@ -34,7 +36,7 @@ class ListingService(ABC):
         ...
 
     def getFieldValue(self, listing: Listing, field: ListingField) -> Any:
-        return listing.dict()[ListingMap[field]]
+        return listing.dict()[listingMap[field]]
 
     def parse(self, field: ListingField, val: str, queryVal: Any | None = None) -> Any:
         match(field):

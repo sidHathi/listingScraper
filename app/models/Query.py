@@ -1,24 +1,26 @@
 from pydantic import BaseModel, validator
 from geopy.location import Location
-from QueryParams import QueryParam
-from QueryParams import REType
-from QueryParams import LeaseTerm
-from Listing import ListingField
+from ..enums import QueryParam, ListingField, REType, LeaseTerm
 from typing import Any
-from constants import termToMonthMap
+from ..constants import termToMonthMap
 
 class Query(BaseModel):
+    # required fields
     location: Location
     reType: REType
     bedrooms: int # 0 for studio
     priceRange: list[int] #[min, max]
     leaseTerm: LeaseTerm
-    leaseDuration: int | None # in months or days TBD
+
+    # optional fields
+    leaseDuration: int | None = None # in months or days TBD
+    pets: bool = False
+    transit: bool = False
 
     @validator('leaseDuration')
     def validate_leaseDuration(cls, v, values):
         if v is None:
-            print(values)
+            # print(values)
             return termToMonthMap[values['leaseTerm']]
         return v
 
@@ -41,7 +43,9 @@ class Query(BaseModel):
             QueryParam.Bedrooms: self.bedrooms,
             QueryParam.PriceRange: self.priceRange,
             QueryParam.LeaseTerm: self.leaseTerm,
-            QueryParam.LeaseDuration: self.leaseDuration
+            QueryParam.LeaseDuration: self.leaseDuration,
+            QueryParam.Pets: self.pets,
+            QueryParam.Transit: self.transit
         }
     
     def getCorrespondingField(self, param: QueryParam) -> ListingField | None:
@@ -54,6 +58,10 @@ class Query(BaseModel):
                 return ListingField.Bedrooms
             case QueryParam.LeaseDuration:
                 return ListingField.ShortestLease
+            case QueryParam.Pets:
+                return ListingField.Pets
+            case QueryParam.Transit:
+                return ListingField.Transit
         return None
 
     def getCorrespondingParam(self, field: ListingField) -> QueryParam | None:
@@ -66,6 +74,10 @@ class Query(BaseModel):
                 return QueryParam.Bedrooms
             case ListingField.ShortestLease:
                 return QueryParam.LeaseDuration
+            case ListingField.Pets:
+                return QueryParam.Pets
+            case ListingField.Transit:
+                return QueryParam.Transit
         return None
     
     class Config:

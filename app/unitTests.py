@@ -1,6 +1,6 @@
 from bs4 import BeautifulSoup
-from TagModel import TagModel
-from scrapingUtils import followTagMap, findIntegerListMonths, findIntegerMonths
+from .models.TagModel import TagModel
+from .scrapingUtils import followTagMap, findIntegerListMonths, findIntegerMonths
 
 def testTagMapFollow() -> bool:
     testHtml = '''
@@ -30,7 +30,7 @@ def testTagMapFollow() -> bool:
 def testRegexMatching() -> bool:
     sampleText = 'the lease terms are 1, 2, 3, 4, 5 and 6 months. that is all. maybe 8 months too'
     extract: list[int] | None = findIntegerListMonths(sampleText)
-    print(extract)
+    # print(extract)
 
     assert(extract != None)
     assert(len(extract) == 7)

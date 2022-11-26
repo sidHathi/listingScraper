@@ -1,9 +1,7 @@
 from geopy.location import Location
-from QueryParams import QueryParam
-from QueryParams import REType
-from QueryParams import LeaseTerm
+from ..enums import QueryParam, REType, LeaseTerm
 from abc import ABC, abstractmethod
-from Query import Query
+from ..models.Query import Query
 from enum import Enum
 from typing import Any
 
@@ -54,6 +52,14 @@ class UrlService(ABC):
         ...
 
     @abstractmethod
+    def pets(self, param: bool) -> str | None:
+        ...
+
+    @abstractmethod
+    def transit(self, param: bool) -> str | None:
+        ...
+
+    @abstractmethod
     def composeUrl(self, query: Query) -> dict[UrlFieldType, Any]:
         queryDict = query.getQueryParamDict();
         return {
@@ -65,7 +71,9 @@ class UrlService(ABC):
                 self.bedrooms(queryDict[QueryParam.Bedrooms]),
                 self.priceRange(queryDict[QueryParam.PriceRange]),
                 self.leaseDuration(queryDict[QueryParam.LeaseDuration]),
-                self.leaseTerm(queryDict[QueryParam.LeaseTerm])
+                self.leaseTerm(queryDict[QueryParam.LeaseTerm]),
+                self.pets(queryDict[QueryParam.Pets]),
+                self.transit(queryDict[QueryParam.Transit])
             ]
         }
 

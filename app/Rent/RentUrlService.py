@@ -1,9 +1,10 @@
-from UrlService import UrlService
+from ..interfaces.UrlService import UrlService
 from geopy.location import Location
-from QueryParams import QueryParam, REType, LeaseTerm
-from Query import Query
+from ..enums import QueryParam, REType, LeaseTerm
+from ..models.Query import Query
 from typing import Any
-from UrlService import UrlFieldType
+from ..interfaces.UrlService import UrlFieldType
+import re
 
 class RentUrlService(UrlService):
     def baseUrl(self) -> str:
@@ -16,7 +17,7 @@ class RentUrlService(UrlService):
         addr = queryLocation.raw['address']
         if 'city' not in addr or 'state' not in addr:
             return []
-        return [addr['state'].lower(), addr['city'].lower()]
+        return [re.sub(' ', '-', addr['state'].lower()), re.sub(' ', '-', addr['city'].lower())]
     
     def reType(self, param: REType) -> str:
         match(param):
@@ -51,6 +52,14 @@ class RentUrlService(UrlService):
             return 'short-term-available'
         return None
 
+    def pets(self, param: bool) -> str | None:
+        if param:
+            return 'pet-friendly'
+        return None
+
+    def transit(self, param: bool) -> str | None:
+        return None
+
     def composeUrl(self, query: Query) -> dict[UrlFieldType, Any]:
         queryDict = query.getQueryParamDict();
         locationArr = self.location(queryDict[QueryParam.Location])
@@ -64,6 +73,7 @@ class RentUrlService(UrlService):
                 self.bedrooms(queryDict[QueryParam.Bedrooms]),
                 self.priceRange(queryDict[QueryParam.PriceRange]),
                 self.leaseDuration(queryDict[QueryParam.LeaseDuration]),
-                self.leaseTerm(queryDict[QueryParam.LeaseTerm])
+                self.leaseTerm(queryDict[QueryParam.LeaseTerm]),
+                self.pets(queryDict[QueryParam.Pets])
             ]
         }

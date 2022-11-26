@@ -1,8 +1,8 @@
 from selenium import webdriver
 from bs4 import BeautifulSoup
-from TagModel import TagModel
+from .models.TagModel import TagModel
 import re
-from QueryParams import LeaseTerm
+from .enums import LeaseTerm
 
 async def htmlPull(url: str, browser: webdriver.Chrome, timeout: int) -> str:
     browser.get(url)
