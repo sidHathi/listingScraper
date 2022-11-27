@@ -75,7 +75,7 @@ class Scraper:
             if url not in alreadyScraped:
                 concurrentScrapers.append(htmlPull(url, browser, timeout))
         
-        rawPages = await asyncio.gather(*concurrentScrapers)
+        rawPages: list[str] = await asyncio.gather(*concurrentScrapers)
         def getSoup(page) -> BeautifulSoup:
             return BeautifulSoup(page, 'html.parser')
         pages: list[BeautifulSoup] = list(map(getSoup, rawPages))
