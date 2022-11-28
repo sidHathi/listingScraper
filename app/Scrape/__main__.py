@@ -1,11 +1,13 @@
 import sys
+import asyncio
+from geopy.geocoders import Nominatim
+from geopy.location import Location
+from typing import cast
+
 from ..interfaces.UrlService import UrlService
 from ..Rent.RentUrlService import RentUrlService
 from ..models.Query import Query
-from geopy.geocoders import Nominatim
-from geopy.location import Location
 from ..enums import REType, LeaseTerm
-from typing import cast
 from .Scraper import Scraper
 from ..models.ParsingModel import ParsingModel
 from ..models.TagModel import TagModel
@@ -13,12 +15,13 @@ from ..DBInterface import DBInterface
 from ..models.Listing import Listing
 from ..interfaces.ListingService import ListingService
 from ..Rent.RentListingService import RentListingService
+from ..FBM.FBMUrlService import FBMUrlService
 from ..unitTests import testTagMapFollow, testRegexMatching
 from ..constants import rentSearchingTag
-import asyncio
 
 async def main() -> None:
     service: UrlService = RentUrlService()
+    fbService: UrlService = FBMUrlService()
     geolocator = Nominatim(user_agent='housing_scraper')
     geocoded = geolocator.geocode('Boston, MA', exactly_one=True, addressdetails=True)
     if geocoded is None:
@@ -38,6 +41,9 @@ async def main() -> None:
     )
 
     urlDict = service.composeUrl(query)
+    fbUrlDict = fbService.composeUrl(query)
+    print(fbUrlDict)
+    print(fbService.construct(query))
     print(urlDict)
     print (service.construct(query))
 

@@ -16,6 +16,7 @@ class Query(BaseModel):
     leaseDuration: int | None = None # in months or days TBD
     pets: bool = False
     transit: bool = False
+    # TO-DO: Add furnished field
 
     @validator('leaseDuration')
     def validate_leaseDuration(cls, v, values):

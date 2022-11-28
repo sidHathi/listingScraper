@@ -1,6 +1,6 @@
 from bs4 import BeautifulSoup
 from .models.TagModel import TagModel
-from .scrapingUtils import followTagMap, findIntegerListMonths, findIntegerMonths
+from .utils.scrapingUtils import followTagMap, findIntegerListMonths, findIntegerMonths
 
 def testTagMapFollow() -> bool:
     testHtml = '''

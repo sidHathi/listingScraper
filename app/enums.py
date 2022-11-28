@@ -33,3 +33,8 @@ class LeaseTerm(Enum):
     DateRange = 3
     LongTerm = 4
     Specific = 5
+
+class UrlFieldType(Enum):
+    Prefix = 1
+    PathPrefixes = 2
+    Params = 3

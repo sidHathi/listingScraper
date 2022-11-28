@@ -1,6 +1,6 @@
 from ..models.CullingModel import CullingModel
 from ..DBInterface import DBInterface
-from ..scrapingUtils import htmlPull, followTagMap
+from ..utils.scrapingUtils import htmlPull, followTagMap
 from ..models.TagModel import TagModel
 
 import asyncio

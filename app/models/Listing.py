@@ -17,6 +17,7 @@ class Listing(BaseModel):
     shortestLease: int # in months
     pets: bool
     transit: bool
+    # TO-DO: Add furnished field
 
     @validator('bedrooms')
     def validate_bedrooms(cls, v):

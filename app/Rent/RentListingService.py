@@ -3,7 +3,7 @@ from typing import Any, cast
 from geopy.geocoders import Nominatim
 from geopy.location import Location
 import re
-from ..scrapingUtils import findIntegerListMonths, matchLeaseTermByKeyword
+from ..utils.scrapingUtils import findIntegerListMonths, matchLeaseTermByKeyword
 from ..constants import keywordMap, termToMonthMap
 from ..enums import ListingField, LeaseTerm
 from ..models.TagModel import TagModel

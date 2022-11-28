@@ -12,7 +12,7 @@ import requests
 from collections.abc import Iterable
 import asyncio
 from typing import Coroutine, Any
-from ..scrapingUtils import htmlPull, followTagMap
+from ..utils.scrapingUtils import htmlPull, followTagMap
 from ..interfaces.ListingService import ListingService
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options as ChromeOptions

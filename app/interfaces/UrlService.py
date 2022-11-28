@@ -1,14 +1,10 @@
 from geopy.location import Location
-from ..enums import QueryParam, REType, LeaseTerm
 from abc import ABC, abstractmethod
-from ..models.Query import Query
 from enum import Enum
 from typing import Any
 
-class UrlFieldType(Enum):
-    Prefix = 1
-    PathPrefixes = 2
-    Params = 3
+from ..enums import QueryParam, REType, LeaseTerm, UrlFieldType
+from ..models.Query import Query
 
 class UrlService(ABC):
     @abstractmethod
@@ -19,6 +15,11 @@ class UrlService(ABC):
     @abstractmethod
     def paramSeparator(self) -> str:
         '''return the url param separator char'''
+        ...
+
+    @abstractmethod
+    def usesQueryParams(self) -> bool:
+        '''true if params listed as query vals'''
         ...
 
     @abstractmethod
@@ -37,7 +38,7 @@ class UrlService(ABC):
         ...
 
     @abstractmethod
-    def priceRange(self, param: list[int]) -> str | None:
+    def priceRange(self, param: list[int]) -> list[str]:
         """Get the price range string for the url"""
         ...
 
@@ -69,7 +70,7 @@ class UrlService(ABC):
                 *self.location(queryDict[QueryParam.Location]),
                 self.reType(queryDict[QueryParam.REType]),
                 self.bedrooms(queryDict[QueryParam.Bedrooms]),
-                self.priceRange(queryDict[QueryParam.PriceRange]),
+                *self.priceRange(queryDict[QueryParam.PriceRange]),
                 self.leaseDuration(queryDict[QueryParam.LeaseDuration]),
                 self.leaseTerm(queryDict[QueryParam.LeaseTerm]),
                 self.pets(queryDict[QueryParam.Pets]),
@@ -99,9 +100,13 @@ class UrlService(ABC):
         else:
             constructedUrl += '/'
 
+        if self.usesQueryParams:
+            constructedUrl += '?'
+
         for param in params:
-            if param is None:
+            if param is None or len(param) == 0:
                 continue
+            print(param)
             constructedUrl += param
             constructedUrl += self.paramSeparator()
 
