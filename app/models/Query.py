@@ -6,6 +6,7 @@ from ..constants import termToMonthMap
 
 class Query(BaseModel):
     # required fields
+    name: str
     location: Location
     reType: REType
     bedrooms: int # 0 for studio

@@ -7,13 +7,14 @@ config = dotenv_values(".env")
 
 class DBInterface:
     def __init__(self):
-        if config["ATLAS_URI"] is None or config["DB_NAME"] is None or config['LISTINGS_COLLECTION_NAME'] is None or config['MIGRATIONS_COLLECTION_NAME'] is None:
+        if config["ATLAS_URI"] is None or config["DB_NAME"] is None or config['LISTINGS_COLLECTION_NAME'] is None or config['MIGRATIONS_COLLECTION_NAME'] is None or config['QUERIES_COLLECTION_NAME'] is None:
             raise Exception("env variables not configured")
         
         client = MongoClient(str(config['ATLAS_URI']))
         self.db = client[config['DB_NAME']]
         self.listingsCol = self.db[config['LISTINGS_COLLECTION_NAME']]
         self.migrationsCol = self.db[config['MIGRATIONS_COLLECTION_NAME']]
+        self.queriesCol = self.db[config['QUERIES_COLLECTION_NAME']]
 
     def getListingUrls(self) -> list[dict[str, str]]:
         return list(self.listingsCol.find({}, {'_id': 1, 'url': 1, 'scrapeTime': 1}))
@@ -45,4 +46,7 @@ class DBInterface:
     
     def removeMigration(self, index: int):
         self.migrationsCol.delete_one({'index': index})
+
+    def getQueries(self) -> list[dict[str, Any]]:
+        return list(self.queriesCol.find())
 

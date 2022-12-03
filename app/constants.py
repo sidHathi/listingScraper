@@ -1,8 +1,10 @@
+from typing import Any
+from enum import Enum
+
 from .enums import LeaseTerm, REType
 from .enums import ListingField
-from enum import Enum
 from .models.TagModel import TagModel
-from typing import Any
+from .utils.genUtils import reverseDict
 
 keywordMap: dict[str, LeaseTerm] = {
     "short-term": LeaseTerm.ShortTerm,
@@ -42,8 +44,23 @@ enumMaps: dict[str, dict[Enum, str]] = {
         REType.Apartment: 'apartment',
         REType.Condo: 'condo',
         REType.SharedSpace: 'shared-space'
+    },
+    'LeaseTerm': {
+        LeaseTerm.ShortTerm: 'shortTerm',
+        LeaseTerm.MonthToMonth: 'monthToMonth',
+        LeaseTerm.DateRange: 'dateRange',
+        LeaseTerm.LongTerm: 'longTerm',
+        LeaseTerm.Specific: "specific"
     }
 }
+
+reversedEnumMaps: dict[str, dict[str, Enum]] = dict(zip(
+    list(enumMaps.keys()), 
+    list(map(
+        lambda preRev: reverseDict(preRev),
+        list(enumMaps.values())
+    ))
+))
 
 rentSearchingTag: TagModel = TagModel(identifiers={
     'data-tid': 'pdp-link', 

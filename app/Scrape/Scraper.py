@@ -21,14 +21,12 @@ from selenium.webdriver.chrome.options import Options as ChromeOptions
 class Scraper:
     def __init__(self, 
         urlString: str, 
-        query: Query,
         urlService: UrlService,
         listingService: ListingService,
         paginationModel: PaginationModel | None,
         parsingModel: ParsingModel,
         dbInterface: DBInterface ) -> None:
         self.urlString: str = urlString
-        self.query = query
         self.urlService: UrlService = urlService
         self.listingService: ListingService = listingService
 
@@ -39,12 +37,12 @@ class Scraper:
         self.dbInterface: DBInterface = dbInterface
 
 
-    async def searchHtmlPull(self, timeout: int) -> None:
+    async def searchHtmlPull(self, query: Query, timeout: int) -> None:
         '''
         TO-DO: Implement pagination support as per 
         https://sidhathi.notion.site/Scraper-Planning-0fc4a6229b534d87b0e0241fd7d27905
         '''
-        url = self.urlService.construct(self.query)
+        url = self.urlService.construct(query)
         if url is None:
             return
         opts = ChromeOptions()
@@ -118,8 +116,7 @@ class Scraper:
         return urls
 
 
-    def listingsScrape(self) -> list[Listing]:
-        query = self.query
+    def listingsScrape(self, query: Query) -> list[Listing]:
         pages = self.listingHtmlPages
         assert(pages is not None)
 
@@ -163,12 +160,10 @@ class Scraper:
         return listings
 
 
-    async def executeQuery(self, query: Query | None = None, timeout: int = 60) -> None:
-        if query is not None:
-            self.query = query
-        await self.searchHtmlPull(timeout)
+    async def executeQuery(self, query: Query, timeout: int = 60) -> None:
+        await self.searchHtmlPull(query, timeout)
         await self.listingsHtmlPull(self.htmlParse(), timeout)
-        listings: list[Listing] = self.listingsScrape()
+        listings: list[Listing] = self.listingsScrape(query)
 
         for listing in listings:
             print(listing)
