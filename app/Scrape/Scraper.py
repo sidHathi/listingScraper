@@ -127,6 +127,7 @@ class Scraper:
         listings: list[Listing] = []
         for url, page in pages.items():
             listingJson: dict[str, Any] = {}
+            listingJson[listingMap[ListingField.ProviderName]] = self.listingService.getProviderName()
             for field in ListingField:
                 if field == ListingField.Url:
                     listingJson[listingMap[field]] = url
@@ -143,6 +144,9 @@ class Scraper:
                      continue
                 matchingTags = followTagMap(fieldMap, page)
                 if len(matchingTags) < 1:
+                    if queryVal is not None:
+                        listingJson[listingMap[field]] = queryVal
+                        continue
                     listingJson[listingMap[field]] = fieldDefaults[field]
                     continue
                 matchedTag = matchingTags[0]
@@ -167,5 +171,6 @@ class Scraper:
         listings: list[Listing] = self.listingsScrape()
 
         for listing in listings:
-            self.dbInterface.addListing(listing)
+            print(listing)
+            #self.dbInterface.addListing(listing)
 

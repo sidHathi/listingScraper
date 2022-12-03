@@ -9,6 +9,7 @@ class Listing(BaseModel):
     # No optional fields for listings - 
     # default values should be set when unknown
     url: str
+    providerName: str
     name: str
     location: Location
     reType: REType

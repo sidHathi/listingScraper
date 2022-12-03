@@ -1,14 +1,18 @@
-from ..interfaces.ListingService import ListingService
 from typing import Any, cast
 from geopy.geocoders import Nominatim
 from geopy.location import Location
 import re
+
+from ..interfaces.ListingService import ListingService
 from ..utils.scrapingUtils import findIntegerListMonths, matchLeaseTermByKeyword
 from ..constants import keywordMap, termToMonthMap
 from ..enums import ListingField, LeaseTerm
 from ..models.TagModel import TagModel
 
 class RentListingService(ListingService):
+    def getProviderName(self) -> str:
+        return "rent.com"
+
     def parseName(self, nameStr: str) -> str:
         return nameStr
 

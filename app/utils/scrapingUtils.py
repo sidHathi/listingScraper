@@ -1,5 +1,6 @@
 from selenium import webdriver
 from bs4 import BeautifulSoup
+from typing import Any, AnyStr
 import re
 
 
@@ -67,6 +68,28 @@ def findIntegerListMonths(domContent: str) -> list[int] | None:
                     monthVals.append(val)
                     added.add(val)
     return monthVals
+
+def matchRegex(matchString: str, searchString: str, flags: list[re.RegexFlag]) -> str | None:
+    regex = re.compile(matchString, *flags)
+    search = regex.search(searchString)
+    if search is None:
+        return None
+    addr: str = search.group()
+    return addr
+
+def findCompleteAddress(domContent: str) -> str | None:
+    return matchRegex(r'(\d+\s(\w+\s){1,4}(Ave|St|Rd|Dr|Cir|BLVD|CT|EXPY|FWY|LN|PKY|RD|SQ|TPKE)[\s,]{0,2}(NE|NW|SE|SW|E|W|N|S){0,1}[\s,]{0,2}([A-Za-z]+[\s,]{1,2}){0,3}[A-Z]{2,3}(\s\d+){0,1})', domContent, [re.IGNORECASE])
+
+def findCityStatePair(domContent: str) -> str | None:
+    return matchRegex(r'(([A-Z][a-z]+[\s,.]{0,2}){1,4}[A-Z]{2,3})', domContent, [])
+
+def findPrice(domContent: str) -> str | None:
+    priceStr = matchRegex(r'(\$[\d.,]+\s{0,1}\/)', domContent, [])
+    if priceStr is None:
+        return None
+    
+    numeric = re.sub(r'[^0-9]', '', priceStr)
+    return numeric
 
 def matchKeyword(domContent: str, keyword: str) -> bool:
     if keyword.upper() in map(str.upper, domContent):

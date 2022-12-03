@@ -15,13 +15,20 @@ from ..DBInterface import DBInterface
 from ..models.Listing import Listing
 from ..interfaces.ListingService import ListingService
 from ..Rent.RentListingService import RentListingService
+from ..FBM.FBMListingService import FBMListingService
 from ..FBM.FBMUrlService import FBMUrlService
 from ..unitTests import testTagMapFollow, testRegexMatching
-from ..constants import rentSearchingTag
+from ..constants import rentSearchingTag, fbmSearchingTag
 
 async def main() -> None:
     service: UrlService = RentUrlService()
-    fbService: UrlService = FBMUrlService()
+    listingService: ListingService = RentListingService()
+    parsingModel = ParsingModel(targetTag=rentSearchingTag, requiresTagMap=False, listingService=listingService)
+
+    fbUrlService: UrlService = FBMUrlService()
+    fbListingService: ListingService = FBMListingService()
+    fbParsingModel: ParsingModel = ParsingModel(targetTag=fbmSearchingTag, requiresTagMap=False, listingService=fbListingService)
+
     geolocator = Nominatim(user_agent='housing_scraper')
     geocoded = geolocator.geocode('Boston, MA', exactly_one=True, addressdetails=True)
     if geocoded is None:
@@ -41,26 +48,35 @@ async def main() -> None:
     )
 
     urlDict = service.composeUrl(query)
-    fbUrlDict = fbService.composeUrl(query)
+    fbUrlDict = fbUrlService.composeUrl(query)
     print(fbUrlDict)
-    print(fbService.construct(query))
+    print(fbUrlService.construct(query))
     print(urlDict)
     print (service.construct(query))
 
     dbInterface = DBInterface()
-    listingServce: ListingService = RentListingService()
-    parsingModel = ParsingModel(targetTag=rentSearchingTag, requiresTagMap=False, listingService=listingServce)
 
     scraper = Scraper(
         urlString ='https://www.rent.com', 
         query=query,
         urlService=service, 
-        listingService=listingServce,
+        listingService=listingService,
         paginationModel=None, 
         parsingModel=parsingModel, 
         dbInterface = dbInterface
     )
-    await scraper.executeQuery(query)
+    fbScraper = Scraper(
+        urlString ='https://www.facebook.com', 
+        query=query,
+        urlService=fbUrlService, 
+        listingService=fbListingService,
+        paginationModel=None, 
+        parsingModel=fbParsingModel, 
+        dbInterface = dbInterface
+    )
+
+    #await scraper.executeQuery(query)
+    await fbScraper.executeQuery(query)
     # await scraper.searchHtmlPull(60)
     # urls: list[str] = scraper.htmlParse()
     # print(urls)

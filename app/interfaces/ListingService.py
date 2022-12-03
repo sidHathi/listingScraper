@@ -8,6 +8,10 @@ from geopy.location import Location
 
 class ListingService(ABC):
     @abstractmethod
+    def getProviderName(self) -> str:
+        ...
+
+    @abstractmethod
     def parseName(self, nameStr: str) -> str:
         ...
 

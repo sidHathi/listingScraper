@@ -2,14 +2,15 @@ from enum import Enum
 
 class ListingField(Enum):
     Url = 1
-    Name = 2
-    Location = 3
-    REType = 4
-    Bedrooms = 5
-    Price = 6
-    ShortestLease = 7
-    Pets = 8
-    Transit = 9
+    ProviderName = 2
+    Name = 3
+    Location = 4
+    REType = 5
+    Bedrooms = 6
+    Price = 7
+    ShortestLease = 8
+    Pets = 9
+    Transit = 10
 
 class QueryParam(Enum):
     Location = 1
