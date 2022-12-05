@@ -11,32 +11,38 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options as ChromeOptions
 
 class Culler:
-    def __init__(self, cullingModel: CullingModel, dbInterface : DBInterface):
-        self.cullingModel: CullingModel = cullingModel
+    def __init__(self, cullingModels: dict[str, CullingModel], dbInterface : DBInterface):
+        self.cullingModels: dict[str, CullingModel] = cullingModels
         self.dbInterface: DBInterface = dbInterface
 
-        self.dbUrlIdPairs: list[dict[str, Any]] | None = None
+        self.dbUrlNamePairs: list[dict[str, Any]] | None = None
 
     def getDbUrls(self):
-        self.dbUrlIdPairs = self.dbInterface.getListingUrls()
+        self.dbUrlNamePairs = self.dbInterface.getListingUrlsByProvider()
 
-    async def checkListingIsExpired(self, url: str, browser: webdriver.Chrome, timeout: int = 60) -> bool:
-        html: str = await htmlPull(url, browser, timeout)
+    async def checkListingIsExpired(self, provider: str, url: str, browser: webdriver.Chrome, timeout: int = 60) -> bool:
+        html = await htmlPull(url, browser, timeout)
+        # one retry for possible connection error
+        if html is None:
+            html = await htmlPull(url, browser, timeout)
+        assert(html is not None)
+
         soup: BeautifulSoup = BeautifulSoup(html, 'html.parser')
-        notFoundTag: TagModel = self.cullingModel.notFoundTag
-        if soup.find(notFoundTag.tagType, notFoundTag.identifiers) is not None:
+        notFoundTag: TagModel | None = self.cullingModels[provider].notFoundTag
+        if notFoundTag is not None and soup.find(notFoundTag.tagType, notFoundTag.identifiers) is not None:
             return True
 
-        statusTags: list[BeautifulSoup] = followTagMap(self.cullingModel.tagMap, soup)
+        statusTags: list[BeautifulSoup] = followTagMap(self.cullingModels[provider].tagMap, soup)
         if len(statusTags) != 1:
             return False
 
-        targetVal = self.cullingModel.targetVal
-        if self.cullingModel.targetField is None:
+        targetVal = self.cullingModels[provider].targetVal
+        targetField = self.cullingModels[provider].targetField
+        if targetField is None:
             if targetVal in statusTags[0].text:
                 return True
         else:
-            if statusTags[0].get(self.cullingModel.targetField) == targetVal:
+            if statusTags[0].get(targetField) == targetVal:
                 return True
         return False
 
@@ -45,16 +51,18 @@ class Culler:
         browser = webdriver.Chrome('chromedriver', options=opts)
         browser.maximize_window()
 
-        if self.dbUrlIdPairs is None:
+        if self.dbUrlNamePairs is None:
             self.getDbUrls()
-        assert self.dbUrlIdPairs is not None
+        assert self.dbUrlNamePairs is not None
 
         unexpiredPairs: list[dict[str, Any]] = []
-        for pair in self.dbUrlIdPairs:
+        for pair in self.dbUrlNamePairs:
             assert 'scrapeTime' in pair
+            assert 'providerName' in pair
+            provider = pair['providerName']
             currentTime = datetime.today()
             timeDif: timedelta = currentTime - pair['scrapeTime']
-            if timeDif.days > self.cullingModel.expirationTimeInDays:
+            if timeDif.days > self.cullingModels[provider].expirationTimeInDays:
                 assert '_id' in pair
                 print(f'deleting {pair}')
                 self.dbInterface.removeListing(pair['_id'])
@@ -64,12 +72,13 @@ class Culler:
         evaluators: list[Coroutine] = []
         for pair in unexpiredPairs:
             assert 'url' in pair
-            evaluators.append(self.checkListingIsExpired(pair['url'], browser))
+            assert 'providerName' in pair
+            evaluators.append(self.checkListingIsExpired(pair['providerName'], pair['url'], browser))
         
-        expirationList: list[bool] = await asyncio.gather(*evaluators)
-        for i in range(len(expirationList)):
-            if expirationList[i]:
-                culpritListingPair = self.dbUrlIdPairs[i]
+        cullList: list[bool] = await asyncio.gather(*evaluators)
+        for i in range(len(cullList)):
+            if cullList[i]:
+                culpritListingPair = self.dbUrlNamePairs[i]
                 assert '_id' in culpritListingPair
                 print(f'deleting {culpritListingPair}')
                 self.dbInterface.removeListing(culpritListingPair['_id'])

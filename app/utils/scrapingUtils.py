@@ -1,16 +1,20 @@
 from selenium import webdriver
+from selenium.common.exceptions import WebDriverException
 from bs4 import BeautifulSoup
 from typing import Any, AnyStr
 import re
 
 
 from ..models.TagModel import TagModel
-from ..enums import LeaseTerm
+from ..enums import LeaseTerm, ListingField
 
-async def htmlPull(url: str, browser: webdriver.Chrome, timeout: int) -> str:
-    browser.get(url)
-    browser.implicitly_wait(timeout)
-    return browser.page_source
+async def htmlPull(url: str, browser: webdriver.Chrome, timeout: int) -> str | None:
+    try:
+        browser.get(url)
+        browser.implicitly_wait(timeout)
+        return browser.page_source
+    except WebDriverException:
+        return None
 
 def followTagMap(tagMap: list[TagModel], dom: BeautifulSoup) -> list[BeautifulSoup]:
     currentTagList = []
@@ -23,6 +27,12 @@ def followTagMap(tagMap: list[TagModel], dom: BeautifulSoup) -> list[BeautifulSo
             nextTagList.extend(tag.find_all(step.tagType, step.identifiers))
         currentTagList = nextTagList
     return currentTagList
+
+def queryToListingFieldConvert(field: Any, fieldType: ListingField):
+    if fieldType is ListingField.Bedrooms:
+        return [field, field]
+    else:
+        return field
 
 def findIntegerMonths(domContent: str) -> list[int] | None:
     regex = re.compile(r'(\d+[-,\s]*(months|month))', re.IGNORECASE)

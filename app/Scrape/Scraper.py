@@ -1,4 +1,11 @@
 from bs4 import BeautifulSoup
+import requests
+from collections.abc import Iterable
+import asyncio
+from typing import Coroutine, Any, cast
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options as ChromeOptions
+
 from ..interfaces.UrlService import UrlService
 from ..models.Query import Query
 from ..models.Listing import Listing
@@ -8,15 +15,8 @@ from ..models.PaginationModel import PaginationModel
 from ..models.ParsingModel import ParsingModel
 from ..models.TagModel import TagModel
 from ..DBInterface import DBInterface
-import requests
-from collections.abc import Iterable
-import asyncio
-from typing import Coroutine, Any
-from ..utils.scrapingUtils import htmlPull, followTagMap
+from ..utils.scrapingUtils import htmlPull, followTagMap, queryToListingFieldConvert
 from ..interfaces.ListingService import ListingService
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options as ChromeOptions
-
 
 class Scraper:
     def __init__(self, 
@@ -50,6 +50,11 @@ class Scraper:
         browser.maximize_window()
         
         baseHtml = await htmlPull(url, browser, timeout)
+        # one retry for possible connection error
+        if baseHtml is None:
+            baseHtml = await htmlPull(url, browser, timeout)
+        assert(baseHtml is not None)
+
         soup = BeautifulSoup(baseHtml, 'html.parser')
         # ADD PAGINATION HERE
 
@@ -73,10 +78,14 @@ class Scraper:
             if url not in alreadyScraped:
                 concurrentScrapers.append(htmlPull(url, browser, timeout))
         
-        rawPages: list[str] = await asyncio.gather(*concurrentScrapers)
+        rawPages: list[str | None] = await asyncio.gather(*concurrentScrapers)
         def getSoup(page) -> BeautifulSoup:
             return BeautifulSoup(page, 'html.parser')
-        pages: list[BeautifulSoup] = list(map(getSoup, rawPages))
+        filteredPages: list[str] = cast(list[str], filter(
+            lambda page: page is not None,
+            rawPages
+        ))
+        pages: list[BeautifulSoup] = list(map(getSoup, filteredPages))
         browser.quit()
         self.listingHtmlPages = dict(zip(urls, pages))
 
@@ -144,7 +153,7 @@ class Scraper:
                 matchingTags = followTagMap(fieldMap, page)
                 if len(matchingTags) < 1:
                     if queryVal is not None:
-                        listingJson[listingMap[field]] = queryVal
+                        listingJson[listingMap[field]] = queryToListingFieldConvert(queryVal, field)
                         continue
                     listingJson[listingMap[field]] = fieldDefaults[field]
                     continue

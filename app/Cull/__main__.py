@@ -7,7 +7,7 @@ import sys
 import asyncio
 
 async def main():
-    cullingModel: CullingModel = CullingModel(
+    rentCullingModel: CullingModel = CullingModel(
         targetVal='Currently Unavailable',
         tagMap= [
             TagModel(
@@ -25,8 +25,29 @@ async def main():
         ),
         expirationTimeInDays=5
     )
+    fbmCullingModel: CullingModel = CullingModel(
+        targetVal='unavailable',
+        tagMap= [
+            TagModel(tagType='div', identifiers={
+                'class': 'x78zum5 x1iyjqo2 x1n2onr6 xdt5ytf'
+            }),
+            TagModel(tagType='div', identifiers={
+                'class': 'xyamay9 x1pi30zi x18d9i69 x1swvt13'
+            }),
+            TagModel(tagType='h1', identifiers={
+                'class': 'x1heor9g x1qlqyl8 x1pd3egz x1a2a7pz x193iq5w xeuugli'
+            })
+        ],
+        notFoundTag=None,
+        expirationTimeInDays=5
+    )
+    cullingMap = {
+        'facebook': fbmCullingModel,
+        'rent.com': rentCullingModel
+    }
+
     dbInterface: DBInterface = DBInterface()  
-    culler: Culler = Culler(cullingModel, dbInterface)
+    culler: Culler = Culler(cullingMap, dbInterface)
 
     await culler.cullExpiredListings()
 
