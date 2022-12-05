@@ -126,6 +126,8 @@ class Scraper:
             listingJson: dict[str, Any] = {}
             listingJson[listingMap[ListingField.ProviderName]] = self.listingService.getProviderName()
             for field in ListingField:
+                if field is ListingField.ProviderName:
+                    continue
                 if field == ListingField.Url:
                     listingJson[listingMap[field]] = url
                     continue
@@ -166,6 +168,6 @@ class Scraper:
         listings: list[Listing] = self.listingsScrape(query)
 
         for listing in listings:
-            print(listing)
-            #self.dbInterface.addListing(listing)
+            # print(listing)
+            self.dbInterface.addListing(listing)
 

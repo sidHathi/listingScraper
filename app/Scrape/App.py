@@ -52,6 +52,7 @@ class App:
 
     async def run(self):
         queries: list[Query] = self.getQueries()
+        print(queries)
         scrapers: list[Scraper] = self.buildScrapers()
 
         for query in queries:

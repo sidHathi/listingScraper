@@ -15,13 +15,14 @@ class QueryReader:
     def getQueryData(self):
         self.results = self.dbInterface.getQueries()
 
-    async def parseLocation(self, locStr: str) -> Location:
+    def parseLocation(self, locStr: str) -> Location:
         geolocator = Nominatim(user_agent='housing_scraper')
-        loc = geolocator.geocode(locStr)
+        loc = geolocator.geocode(locStr, addressdetails=True)
         if loc is None:
             return Location(locStr, (0.0, 0.0, 0.0), {})
         cast(Location, loc)
         assert type(loc) is Location
+        print(loc)
         return loc
 
     def getQueryList(self) -> list[Query]:
