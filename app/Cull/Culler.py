@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 from typing import Coroutine, Any
 from bs4 import BeautifulSoup
 from selenium import webdriver
+from undetected_chromedriver import Chrome as uChrome
 from selenium.webdriver.chrome.options import Options as ChromeOptions
 
 class Culler:
@@ -20,12 +21,13 @@ class Culler:
     def getDbUrls(self):
         self.dbUrlNamePairs = self.dbInterface.getListingUrlsByProvider()
 
-    async def checkListingIsExpired(self, provider: str, url: str, browser: webdriver.Chrome, timeout: int = 60) -> bool:
+    async def checkListingIsExpired(self, provider: str, url: str, browser: uChrome, timeout: int = 10) -> bool:
         html = await htmlPull(url, browser, timeout)
         # one retry for possible connection error
         if html is None:
             html = await htmlPull(url, browser, timeout)
-        assert(html is not None)
+        if html is None:
+            return True
 
         soup: BeautifulSoup = BeautifulSoup(html, 'html.parser')
         notFoundTag: TagModel | None = self.cullingModels[provider].notFoundTag
@@ -48,7 +50,8 @@ class Culler:
 
     async def cullExpiredListings(self):
         opts = ChromeOptions()
-        browser = webdriver.Chrome('chromedriver', options=opts)
+        opts.add_argument("--window-size=1920,1080")
+        browser = uChrome(options=opts)
         browser.maximize_window()
 
         if self.dbUrlNamePairs is None:

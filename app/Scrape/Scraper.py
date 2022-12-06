@@ -5,6 +5,7 @@ import asyncio
 from typing import Coroutine, Any, cast
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options as ChromeOptions
+from undetected_chromedriver import Chrome as uChrome
 
 from ..interfaces.UrlService import UrlService
 from ..models.Query import Query
@@ -46,7 +47,8 @@ class Scraper:
         if url is None:
             return
         opts = ChromeOptions()
-        browser = webdriver.Chrome('chromedriver', options=opts)
+        opts.add_argument("--window-size=1920,1080")
+        browser = uChrome(options=opts)
         browser.maximize_window()
         
         baseHtml = await htmlPull(url, browser, timeout)
@@ -65,7 +67,8 @@ class Scraper:
 
     async def listingsHtmlPull(self, urls: list[str], timeout: int) -> None:
         opts = ChromeOptions()
-        browser = webdriver.Chrome('chromedriver', options=opts)
+        opts.add_argument("--window-size=1920,1080")
+        browser = uChrome(options=opts)
         browser.maximize_window()
 
         urlIdPairs: list[dict[str, Any]] = self.dbInterface.getListingUrls()
