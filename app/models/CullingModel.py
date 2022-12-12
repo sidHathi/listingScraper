@@ -7,3 +7,4 @@ class CullingModel(BaseModel):
     tagMap: list[TagModel]
     notFoundTag: TagModel | None = None
     expirationTimeInDays: int
+    elemOnPageLoad: TagModel

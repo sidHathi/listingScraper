@@ -2,30 +2,33 @@ from ..models.CullingModel import CullingModel
 from ..DBInterface import DBInterface
 from ..utils.scrapingUtils import htmlPull, followTagMap
 from ..models.TagModel import TagModel
+from ..RequestHub import RequestHub
 
 import asyncio
 from datetime import datetime, timedelta
 from typing import Coroutine, Any
 from bs4 import BeautifulSoup
-from selenium import webdriver
 from undetected_chromedriver import Chrome as uChrome
 from selenium.webdriver.chrome.options import Options as ChromeOptions
 
 class Culler:
-    def __init__(self, cullingModels: dict[str, CullingModel], dbInterface : DBInterface):
+    def __init__(self, cullingModels: dict[str, CullingModel], dbInterface : DBInterface, requestHub: RequestHub):
         self.cullingModels: dict[str, CullingModel] = cullingModels
         self.dbInterface: DBInterface = dbInterface
+        self.requestHub = requestHub
 
         self.dbUrlNamePairs: list[dict[str, Any]] | None = None
 
     def getDbUrls(self):
         self.dbUrlNamePairs = self.dbInterface.getListingUrlsByProvider()
 
-    async def checkListingIsExpired(self, provider: str, url: str, browser: uChrome, timeout: int = 10) -> bool:
-        html = await htmlPull(url, browser, timeout)
+    def checkListingIsExpired(self, provider: str, url: str) -> bool:
         # one retry for possible connection error
-        if html is None:
-            html = await htmlPull(url, browser, timeout)
+        html: str | None = self.requestHub.executeRequest(
+            url=url,
+            proxyUse=None,
+            elemOnSuccess=self.cullingModels[provider].elemOnPageLoad
+        )
         if html is None:
             return True
 
@@ -72,13 +75,12 @@ class Culler:
             else:
                 unexpiredPairs.append(pair)
 
-        evaluators: list[Coroutine] = []
+        cullList: list[bool] = []
         for pair in unexpiredPairs:
             assert 'url' in pair
             assert 'providerName' in pair
-            evaluators.append(self.checkListingIsExpired(pair['providerName'], pair['url'], browser))
+            cullList.append(self.checkListingIsExpired(pair['providerName'], pair['url']))
         
-        cullList: list[bool] = await asyncio.gather(*evaluators)
         for i in range(len(cullList)):
             if cullList[i]:
                 culpritListingPair = self.dbUrlNamePairs[i]

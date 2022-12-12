@@ -1,6 +1,7 @@
 from ..models.CullingModel import CullingModel
 from ..models.TagModel import TagModel
 from ..DBInterface import DBInterface
+from ..RequestHub import RequestHub
 from .Culler import Culler
 
 import sys
@@ -23,7 +24,8 @@ async def main():
             tagType= None,
             identifiers= {'data-tid': 'search-results-page'}
         ),
-        expirationTimeInDays=5
+        expirationTimeInDays=5,
+        elemOnPageLoad=TagModel(tagType='h1', identifiers={'data-tid':'property-title'})
     )
     fbmCullingModel: CullingModel = CullingModel(
         targetVal='unavailable',
@@ -39,7 +41,8 @@ async def main():
             })
         ],
         notFoundTag=None,
-        expirationTimeInDays=5
+        expirationTimeInDays=5,
+        elemOnPageLoad=TagModel(tagType='h1', identifiers={'tabindex':'-1'})
     )
     cullingMap = {
         'facebook': fbmCullingModel,
@@ -47,7 +50,8 @@ async def main():
     }
 
     dbInterface: DBInterface = DBInterface()  
-    culler: Culler = Culler(cullingMap, dbInterface)
+    requestHub: RequestHub = RequestHub()
+    culler: Culler = Culler(cullingMap, dbInterface, requestHub)
 
     await culler.cullExpiredListings()
 
