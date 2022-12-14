@@ -13,6 +13,9 @@ class FBMListingService(ListingService):
     def getProviderName(self) -> str:
         return "facebook"
 
+    def getOnSuccessTag(self) -> TagModel:
+        return TagModel(tagType='h1', identifiers={'tabindex':'-1'})
+
     def parseName(self, nameStr: str) -> str:
         return nameStr
 

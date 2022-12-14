@@ -5,12 +5,14 @@ from geopy.location import Location
 from typing import cast
 
 from ..DBInterface import DBInterface
+from ..RequestHub import RequestHub
 from .App import App
 
 
 async def main() -> None:
     dbInterface: DBInterface = DBInterface()
-    app: App = App(dbInterface)
+    requestHub: RequestHub = RequestHub()
+    app: App = App(dbInterface, requestHub)
 
     await app.run()
     

@@ -5,15 +5,13 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.proxy import Proxy, ProxyType
+from undetected_chromedriver import Chrome as ucChrome
 
 from random_user_agent.user_agent import UserAgent
 from random_user_agent.params import SoftwareName, OperatingSystem
 
-from bs4 import BeautifulSoup
-
 from typing import Any
 from time import sleep
-import random
 
 from .models.TagModel import TagModel
 
@@ -41,16 +39,17 @@ class RequestHub:
     def tryRequest(self, url: str, elemOnSuccess: TagModel, proxy: bool) -> str | None:
         userAgent: str = self.user_agent_rotator.get_random_user_agent()
         opts = Options()
-        opts.add_argument('window-size=1420,1080')
         opts.add_argument(f'user-agent={userAgent}')
+        opts.add_argument("--window-size=1920,1080")
         if proxy:
-            browser = webdriver.Chrome(options=opts)
+            browser = ucChrome(options=opts)
         else:
-            browser = webdriver.Chrome(options=opts, desired_capabilities=self.proxyCapabilities)
+            browser = ucChrome(options=opts, desired_capabilities=self.proxyCapabilities)
 
         for _ in range(maxRetires):
             browser.get(url)
             try:
+                print(elemOnSuccess.getCssSelector())
                 WebDriverWait(browser, requestTimeout).until(
                     EC.presence_of_element_located((By.CSS_SELECTOR, 
                         elemOnSuccess.getCssSelector()))
@@ -63,6 +62,7 @@ class RequestHub:
                 sleep(6)
                 continue
             finally:
+                print('successful scrape')
                 browser.maximize_window()
                 html: str = browser.page_source
                 browser.close()

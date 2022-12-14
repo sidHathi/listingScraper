@@ -16,6 +16,7 @@ from ..models.PaginationModel import PaginationModel
 from ..models.ParsingModel import ParsingModel
 from ..models.TagModel import TagModel
 from ..DBInterface import DBInterface
+from ..RequestHub import RequestHub
 from ..utils.scrapingUtils import htmlPull, followTagMap, queryToListingFieldConvert
 from ..interfaces.ListingService import ListingService
 
@@ -26,7 +27,8 @@ class Scraper:
         listingService: ListingService,
         paginationModel: PaginationModel | None,
         parsingModel: ParsingModel,
-        dbInterface: DBInterface ) -> None:
+        dbInterface: DBInterface,
+        requestHub:  RequestHub) -> None:
         self.urlString: str = urlString
         self.urlService: UrlService = urlService
         self.listingService: ListingService = listingService
@@ -36,9 +38,10 @@ class Scraper:
         self.paginationModel: PaginationModel | None = paginationModel
         self.parsingModel: ParsingModel = parsingModel
         self.dbInterface: DBInterface = dbInterface
+        self.requestHub = requestHub
 
 
-    async def searchHtmlPull(self, query: Query, timeout: int) -> None:
+    def searchHtmlPull(self, query: Query) -> None:
         '''
         TO-DO: Implement pagination support as per 
         https://sidhathi.notion.site/Scraper-Planning-0fc4a6229b534d87b0e0241fd7d27905
@@ -46,42 +49,30 @@ class Scraper:
         url = self.urlService.construct(query)
         if url is None:
             return
-        opts = ChromeOptions()
-        opts.add_argument("--window-size=1920,1080")
-        browser = uChrome(options=opts)
-        browser.maximize_window()
         
-        baseHtml = await htmlPull(url, browser, timeout)
-        # one retry for possible connection error
+        baseHtml = self.requestHub.executeRequest(url, None, self.parsingModel.targetTag)
         if baseHtml is None:
-            baseHtml = await htmlPull(url, browser, timeout)
-        assert(baseHtml is not None)
+            self.searchHtmlPages = []
+            return
 
         soup = BeautifulSoup(baseHtml, 'html.parser')
         # ADD PAGINATION HERE
 
         self.searchHtmlPages = [soup]
-        browser.quit()
         return
 
 
-    async def listingsHtmlPull(self, urls: list[str], timeout: int) -> None:
-        opts = ChromeOptions()
-        opts.add_argument("--window-size=1920,1080")
-        browser = uChrome(options=opts)
-        browser.maximize_window()
-
+    def listingsHtmlPull(self, urls: list[str]) -> None:
         urlIdPairs: list[dict[str, Any]] = self.dbInterface.getListingUrls()
         def getUrlFromPair(pair: dict[str, Any]):
             return pair['url']
         alreadyScraped: set[str] = set(list(map(getUrlFromPair, urlIdPairs)))
 
-        concurrentScrapers: list[Coroutine] = []
+        rawPages: list[str | None] = []
         for url in urls:
             if url not in alreadyScraped:
-                concurrentScrapers.append(htmlPull(url, browser, timeout))
-        
-        rawPages: list[str | None] = await asyncio.gather(*concurrentScrapers)
+                rawPages.append(self.requestHub.executeRequest(url, True, self.parsingModel.listingService.getOnSuccessTag()))
+                
         def getSoup(page) -> BeautifulSoup:
             return BeautifulSoup(page, 'html.parser')
         filteredPages: list[str] = cast(list[str], filter(
@@ -89,7 +80,6 @@ class Scraper:
             rawPages
         ))
         pages: list[BeautifulSoup] = list(map(getSoup, filteredPages))
-        browser.quit()
         self.listingHtmlPages = dict(zip(urls, pages))
 
 
@@ -174,9 +164,9 @@ class Scraper:
         return listings
 
 
-    async def executeQuery(self, query: Query, timeout: int = 60) -> None:
-        await self.searchHtmlPull(query, timeout)
-        await self.listingsHtmlPull(self.htmlParse(), timeout)
+    def executeQuery(self, query: Query) -> None:
+        self.searchHtmlPull(query)
+        self.listingsHtmlPull(self.htmlParse())
         listings: list[Listing] = self.listingsScrape(query)
 
         for listing in listings:

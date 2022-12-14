@@ -12,6 +12,10 @@ class ListingService(ABC):
         ...
 
     @abstractmethod
+    def getOnSuccessTag(self) -> TagModel:
+        ...
+
+    @abstractmethod
     def parseName(self, nameStr: str) -> str:
         ...
 

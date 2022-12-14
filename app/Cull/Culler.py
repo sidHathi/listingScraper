@@ -26,7 +26,7 @@ class Culler:
         # one retry for possible connection error
         html: str | None = self.requestHub.executeRequest(
             url=url,
-            proxyUse=None,
+            proxyUse=True,
             elemOnSuccess=self.cullingModels[provider].elemOnPageLoad
         )
         if html is None:
@@ -52,11 +52,6 @@ class Culler:
         return False
 
     async def cullExpiredListings(self):
-        opts = ChromeOptions()
-        opts.add_argument("--window-size=1920,1080")
-        browser = uChrome(options=opts)
-        browser.maximize_window()
-
         if self.dbUrlNamePairs is None:
             self.getDbUrls()
         assert self.dbUrlNamePairs is not None

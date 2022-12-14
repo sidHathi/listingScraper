@@ -1,8 +1,7 @@
-import asyncio
-
 from .QueryReader import QueryReader
 from .Scraper import Scraper
 from ..DBInterface import DBInterface
+from ..RequestHub import RequestHub
 from ..models.Query import Query
 from ..interfaces.UrlService import UrlService
 from ..interfaces.ListingService import ListingService
@@ -15,8 +14,9 @@ from ..Rent.RentListingService import RentListingService
 from ..Rent.RentUrlService import RentUrlService
 
 class App:
-    def __init__(self, dbInterface: DBInterface):
+    def __init__(self, dbInterface: DBInterface, requestHub: RequestHub):
         self.dbInterface: DBInterface = dbInterface
+        self.requestHub: RequestHub = requestHub
 
     def getQueries(self) -> list[Query]:
         reader: QueryReader = QueryReader(self.dbInterface)
@@ -33,7 +33,8 @@ class App:
             listingService=rentListingService,
             paginationModel=None, 
             parsingModel=rentParsingModel, 
-            dbInterface = self.dbInterface
+            dbInterface = self.dbInterface, 
+            requestHub=self.requestHub
         )
 
         fbmUrlService: UrlService = FBMUrlService()
@@ -45,10 +46,11 @@ class App:
             listingService=fbmListingService,
             paginationModel=None, 
             parsingModel=fbmParsingModel, 
-            dbInterface = self.dbInterface
+            dbInterface = self.dbInterface, 
+            requestHub=self.requestHub
         )
 
-        return [rentScraper, fbmScraper]
+        return [fbmScraper, rentScraper]
 
     async def run(self):
         queries: list[Query] = self.getQueries()
@@ -57,4 +59,4 @@ class App:
 
         for query in queries:
             for scraper in scrapers:
-                await scraper.executeQuery(query)
+                scraper.executeQuery(query)

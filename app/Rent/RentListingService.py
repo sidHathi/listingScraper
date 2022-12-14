@@ -13,6 +13,9 @@ class RentListingService(ListingService):
     def getProviderName(self) -> str:
         return "rent.com"
 
+    def getOnSuccessTag(self) -> TagModel:
+        return TagModel(tagType='h1', identifiers={'data-tid':'property-title'})
+
     def parseName(self, nameStr: str) -> str:
         return nameStr
 
