@@ -52,11 +52,14 @@ class FBMListingService(ListingService):
         if bedsRegexMatch is None:
             return [0, 0]
         bedsStr: str = re.sub(r'[^0-9-–]', '', bedsRegexMatch.group())
+        if len(bedsStr) < 1:
+            assert(queryVal is not None)
+            return [int(queryVal), int(queryVal)]
         splitVal = re.split(r'[-–]', bedsStr)
         lower = splitVal[0]
         if len(splitVal) == 1:
             return [int(lower), int(lower)]
-        upper = splitVal[0]
+        upper = splitVal[1]
         return [int(lower), int(upper)]
 
     def parsePrice(self, price: str, queryVal: Any | None = None) -> int:
