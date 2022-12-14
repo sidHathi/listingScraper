@@ -56,8 +56,7 @@ class RequestHub:
             self.prox.add_to_capabilities(capabilities)
             opts.proxy = self.prox
             opts.add_argument(f'--proxy-server={proxyUrl}')
-            browser = ucChrome(options=opts)
-            browser.get('http://www.whatsmyip.org/')
+            browser = ucChrome(options=opts, desired_capabilities=capabilities)
         else:
             browser = ucChrome(options=opts)
 
