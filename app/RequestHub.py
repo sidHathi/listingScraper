@@ -12,6 +12,7 @@ from random_user_agent.params import SoftwareName, OperatingSystem
 
 from typing import Any
 from time import sleep
+import json
 
 from .models.TagModel import TagModel
 
@@ -28,13 +29,13 @@ class RequestHub:
 
         self.user_agent_rotator: UserAgent = UserAgent(software_names=software_names, operating_systems=operating_systems, limit=100)
     
-        prox = Proxy()
-        prox.proxy_type = ProxyType.MANUAL
-        prox.auto_detect = False
-        prox.http_proxy = proxyUrl
-        prox.ssl_proxy = proxyUrl
-        self.proxyCapabilities = webdriver.DesiredCapabilities.CHROME
-        prox.add_to_capabilities(self.proxyCapabilities)
+        self.prox = Proxy()
+        self.prox.proxy_type = ProxyType.MANUAL
+        self.prox.auto_detect = False
+        self.prox.http_proxy = proxyUrl
+        self.prox.ssl_proxy = proxyUrl
+        # self.proxyCapabilities = webdriver.DesiredCapabilities.CHROME
+        # prox.add_to_capabilities(self.proxyCapabilities)
 
     def tryRequest(self, url: str, elemOnSuccess: TagModel, proxy: bool) -> str | None:
         userAgent: str = self.user_agent_rotator.get_random_user_agent()
@@ -42,16 +43,23 @@ class RequestHub:
         opts.add_argument(f'user-agent={userAgent}')
         opts.add_argument('--no-sandbox')
         opts.add_argument('--headless')
+        opts.add_argument('--window-size=1920x1080')
         opts.add_argument('--single-process')
         opts.add_argument('--disable-dev-shm-usage')
         opts.add_argument("--incognito")
+        opts.add_argument('--ignore-certificate-errors')
         opts.add_argument('--disable-blink-features=AutomationControlled')
         opts.add_argument('--disable-blink-features=AutomationControlled')
         opts.add_argument("disable-infobars")
         if proxy:
+            capabilities = webdriver.DesiredCapabilities.CHROME
+            self.prox.add_to_capabilities(capabilities)
+            opts.proxy = self.prox
+            opts.add_argument(f'--proxy-server={proxyUrl}')
             browser = ucChrome(options=opts)
+            browser.get('http://www.whatsmyip.org/')
         else:
-            browser = ucChrome(options=opts, desired_capabilities=self.proxyCapabilities)
+            browser = ucChrome(options=opts)
 
         for _ in range(maxRetires):
             browser.get(url)
