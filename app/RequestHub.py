@@ -14,10 +14,11 @@ from typing import Any
 from time import sleep
 import json
 
+from .selenium_python import get_driver_settings, smartproxy
 from .models.TagModel import TagModel
 
 
-proxyUrl: str = 'http://user-scraper:scrapingPass@gate.smartproxy.com:7000'
+proxyUrl: str = 'http://gate.smartproxy.com:7000'
 maxRetires: int = 3
 requestTimeout: int = 10
 
@@ -42,21 +43,21 @@ class RequestHub:
         opts = Options()
         opts.add_argument(f'user-agent={userAgent}')
         opts.add_argument('--no-sandbox')
-        opts.add_argument('--headless')
         opts.add_argument('--window-size=1920x1080')
         opts.add_argument('--single-process')
         opts.add_argument('--disable-dev-shm-usage')
-        opts.add_argument("--incognito")
+        # opts.add_argument("--incognito")
         opts.add_argument('--ignore-certificate-errors')
         opts.add_argument('--disable-blink-features=AutomationControlled')
         opts.add_argument('--disable-blink-features=AutomationControlled')
-        opts.add_argument("disable-infobars")
+        opts.add_argument("--disable-infobars")
+
         if proxy:
-            capabilities = webdriver.DesiredCapabilities.CHROME
-            self.prox.add_to_capabilities(capabilities)
-            opts.proxy = self.prox
+            # capabilities = webdriver.DesiredCapabilities.CHROME
+            # self.prox.add_to_capabilities(capabilities)
+            # opts.proxy = self.prox
             opts.add_argument(f'--proxy-server={proxyUrl}')
-            browser = ucChrome(options=opts, desired_capabilities=capabilities)
+            browser = ucChrome(options=opts, desired_capabilities=smartproxy())
         else:
             browser = ucChrome(options=opts)
 

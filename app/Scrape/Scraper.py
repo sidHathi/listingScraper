@@ -50,7 +50,7 @@ class Scraper:
         if url is None:
             return
         
-        baseHtml = self.requestHub.executeRequest(url, None, self.parsingModel.targetTag)
+        baseHtml = self.requestHub.executeRequest(url, True, self.parsingModel.targetTag)
         if baseHtml is None:
             self.searchHtmlPages = []
             return
