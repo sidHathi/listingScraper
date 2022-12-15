@@ -43,6 +43,8 @@ class RequestHub:
         userAgent: str = self.user_agent_rotator.get_random_user_agent()
         opts = Options()
         opts.add_argument(f'user-agent={userAgent}')
+        opts.add_argument('--headless')
+        opts.add_argument('--disable-gpu')
         opts.add_argument('--no-sandbox')
         opts.add_argument('--window-size=1920x1080')
         opts.add_argument('--single-process')
@@ -73,7 +75,7 @@ class RequestHub:
                 print(e)
                 sleep(6)
                 continue
-            
+
             print('successful scrape')
             # browser.maximize_window()
             html: str = browser.page_source

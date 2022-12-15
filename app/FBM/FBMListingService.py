@@ -14,7 +14,7 @@ class FBMListingService(ListingService):
         return "facebook"
 
     def getOnSuccessTag(self) -> TagModel:
-        return TagModel(tagType='h1', identifiers={'tabindex':'-1'})
+        return TagModel(tagType='h1', identifiers={'class':'x1heor9g x1qlqyl8 x1pd3egz x1a2a7pz x193iq5w xeuugli'})
 
     def parseName(self, nameStr: str) -> str:
         return nameStr
