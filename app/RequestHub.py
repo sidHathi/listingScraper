@@ -12,7 +12,7 @@ from random_user_agent.params import SoftwareName, OperatingSystem
 
 from typing import Any
 from time import sleep
-import json
+from dotenv import dotenv_values
 
 from .selenium_python import smartproxy
 from .models.TagModel import TagModel
@@ -21,10 +21,11 @@ from .models.TagModel import TagModel
 proxyUrl: str = 'http://gate.smartproxy.com:7000'
 maxRetires: int = 3
 requestTimeout: int = 10
-requiresProxy: bool | None = None;
+config = dotenv_values('.env')
 
 class RequestHub:
     def __init__(self) -> None:
+        assert config['PROXY_USE'] is not None
         print('rqh initializing')
         software_names: list[str] = [SoftwareName.CHROME.value]
         operating_systems: list[str] = [OperatingSystem.WINDOWS.value, OperatingSystem.LINUX.value, OperatingSystem.MACOS.value]
@@ -36,8 +37,14 @@ class RequestHub:
         self.prox.auto_detect = False
         self.prox.http_proxy = proxyUrl
         self.prox.ssl_proxy = proxyUrl
-        # self.proxyCapabilities = webdriver.DesiredCapabilities.CHROME
-        # prox.add_to_capabilities(self.proxyCapabilities)
+
+        match config['PROXY_USE']:
+            case 'always':
+                self.proxyUse = True
+            case 'never':
+                self.proxyUse = False
+            case 'ifNeeded':
+                self.proxyUse = None
 
     def tryRequest(self, url: str, elemOnSuccess: TagModel, proxy: bool) -> str | None:
         userAgent: str = self.user_agent_rotator.get_random_user_agent()
@@ -98,12 +105,12 @@ class RequestHub:
         3. Return the first successful result of None
         '''
         # Step one
-        if requiresProxy is None or not requiresProxy:
+        if self.proxyUse is None or not self.proxyUse:
             res: str | None = self.tryRequest(url, elemOnSuccess, False)
             if res is not None:
                 print("valid result without proxy")
                 return res
-        if requiresProxy is None or requiresProxy:
+        if self.proxyUse is None or self.proxyUse:
             res: str | None = self.tryRequest(url, elemOnSuccess, True)
             if res is not None:
                 print("valid result with proxy")
