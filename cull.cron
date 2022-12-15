@@ -1,0 +1,1 @@
+0 7 * * * python3 -m ~/scraper/app.Cull
