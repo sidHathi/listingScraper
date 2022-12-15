@@ -26,7 +26,6 @@ class Culler:
         # one retry for possible connection error
         html: str | None = self.requestHub.executeRequest(
             url=url,
-            proxyUse=True,
             elemOnSuccess=self.cullingModels[provider].elemOnPageLoad
         )
         if html is None:

@@ -14,13 +14,14 @@ from typing import Any
 from time import sleep
 import json
 
-from .selenium_python import get_driver_settings, smartproxy
+from .selenium_python import smartproxy
 from .models.TagModel import TagModel
 
 
 proxyUrl: str = 'http://gate.smartproxy.com:7000'
 maxRetires: int = 3
 requestTimeout: int = 10
+requiresProxy: bool | None = None;
 
 class RequestHub:
     def __init__(self) -> None:
@@ -46,16 +47,12 @@ class RequestHub:
         opts.add_argument('--window-size=1920x1080')
         opts.add_argument('--single-process')
         opts.add_argument('--disable-dev-shm-usage')
-        # opts.add_argument("--incognito")
         opts.add_argument('--ignore-certificate-errors')
         opts.add_argument('--disable-blink-features=AutomationControlled')
         opts.add_argument('--disable-blink-features=AutomationControlled')
         opts.add_argument("--disable-infobars")
 
         if proxy:
-            # capabilities = webdriver.DesiredCapabilities.CHROME
-            # self.prox.add_to_capabilities(capabilities)
-            # opts.proxy = self.prox
             opts.add_argument(f'--proxy-server={proxyUrl}')
             browser = ucChrome(options=opts, desired_capabilities=smartproxy())
         else:
@@ -83,7 +80,7 @@ class RequestHub:
                 browser.close()
                 return html
 
-    def executeRequest(self, url: str, proxyUse: bool | None, elemOnSuccess: TagModel) -> str | None:
+    def executeRequest(self, url: str, elemOnSuccess: TagModel) -> str | None:
         '''
         TO-DO: Implement the following functionality 
         1. Randomly choose a browser from the list of simpleBrowsers
@@ -99,13 +96,15 @@ class RequestHub:
         3. Return the first successful result of None
         '''
         # Step one
-        if proxyUse is None or not proxyUse:
+        if requiresProxy is None or not requiresProxy:
             res: str | None = self.tryRequest(url, elemOnSuccess, False)
             if res is not None:
+                print("valid result without proxy")
                 return res
-        if proxyUse is None or proxyUse:
+        if requiresProxy is None or requiresProxy:
             res: str | None = self.tryRequest(url, elemOnSuccess, True)
             if res is not None:
+                print("valid result with proxy")
                 return res
 
 

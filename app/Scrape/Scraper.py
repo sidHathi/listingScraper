@@ -50,7 +50,7 @@ class Scraper:
         if url is None:
             return
         
-        baseHtml = self.requestHub.executeRequest(url, True, self.parsingModel.targetTag)
+        baseHtml = self.requestHub.executeRequest(url, self.parsingModel.targetTag)
         if baseHtml is None:
             self.searchHtmlPages = []
             return
@@ -71,7 +71,7 @@ class Scraper:
         rawPages: list[str | None] = []
         for url in urls:
             if url not in alreadyScraped:
-                rawPages.append(self.requestHub.executeRequest(url, True, self.parsingModel.listingService.getOnSuccessTag()))
+                rawPages.append(self.requestHub.executeRequest(url, self.parsingModel.listingService.getOnSuccessTag()))
                 
         def getSoup(page) -> BeautifulSoup:
             return BeautifulSoup(page, 'html.parser')
