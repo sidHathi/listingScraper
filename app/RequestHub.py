@@ -73,12 +73,12 @@ class RequestHub:
                 print(e)
                 sleep(6)
                 continue
-            finally:
-                print('successful scrape')
-                # browser.maximize_window()
-                html: str = browser.page_source
-                browser.close()
-                return html
+            
+            print('successful scrape')
+            # browser.maximize_window()
+            html: str = browser.page_source
+            browser.close()
+            return html
 
     def executeRequest(self, url: str, elemOnSuccess: TagModel) -> str | None:
         '''
