@@ -42,7 +42,7 @@ async def main():
         ],
         notFoundTag=None,
         expirationTimeInDays=5,
-        elemOnPageLoad=TagModel(tagType='h1', identifiers={'tabindex':'-1'})
+        elemOnPageLoad=TagModel(tagType='h1', identifiers={'class':'x1heor9g x1qlqyl8 x1pd3egz x1a2a7pz x193iq5w xeuugli'})
     )
     cullingMap = {
         'facebook': fbmCullingModel,
