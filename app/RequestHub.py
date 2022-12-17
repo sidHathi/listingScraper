@@ -64,8 +64,8 @@ class RequestHub:
             browser = ucChrome(options=opts)
 
         for _ in range(maxRetires):
-            browser.get(url)
             try:
+                browser.get(url)
                 print(elemOnSuccess.getCssSelector())
                 WebDriverWait(browser, requestTimeout).until(
                     EC.presence_of_element_located((By.CSS_SELECTOR, 
