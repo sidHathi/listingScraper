@@ -34,7 +34,8 @@ class App:
             paginationModel=None, 
             parsingModel=rentParsingModel, 
             dbInterface = self.dbInterface, 
-            requestHub=self.requestHub
+            requestHub=self.requestHub,
+            scrapeWithProxy=False
         )
 
         fbmUrlService: UrlService = FBMUrlService()
@@ -47,7 +48,8 @@ class App:
             paginationModel=None, 
             parsingModel=fbmParsingModel, 
             dbInterface = self.dbInterface, 
-            requestHub=self.requestHub
+            requestHub=self.requestHub,
+            scrapeWithProxy=True
         )
 
         return [rentScraper]

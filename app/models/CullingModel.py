@@ -8,3 +8,4 @@ class CullingModel(BaseModel):
     notFoundTag: TagModel | None = None
     expirationTimeInDays: int
     elemOnPageLoad: TagModel
+    cullWithProxy: bool

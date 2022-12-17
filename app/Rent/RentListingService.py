@@ -1,6 +1,7 @@
 from typing import Any, cast
 from geopy.geocoders import Nominatim
 from geopy.location import Location
+from geopy.exc import GeocoderTimedOut, GeocoderParseError, GeocoderServiceError
 import re
 
 from ..interfaces.ListingService import ListingService
@@ -20,16 +21,24 @@ class RentListingService(ListingService):
         return nameStr
 
     def parseLocation(self, locStr: str, queryVal: Any | None = None) -> Location:
-        geolocator = Nominatim(user_agent='housing_scraper')
-        geocoded = geolocator.geocode(locStr, exactly_one=True, addressdetails=True)
-        if geocoded is None:
+        location: Location | None = None
+        try: 
+            geolocator = Nominatim(user_agent='housing_scraper')
+            geocoded = geolocator.geocode(locStr, exactly_one=True, addressdetails=True)
+            if geocoded is None:
+                print(locStr)
+                print('invalid location')
+                assert(queryVal is not None)
+                return queryVal
+            location = cast(Location, geocoded)
+        except (GeocoderTimedOut, GeocoderServiceError, GeocoderParseError) as e:
             print(locStr)
             print('invalid location')
-            assert(queryVal is not None)
-            return queryVal
-        location: Location = cast(Location, geocoded)
+            print(e)
+
         if location is None or 'address' not in location.raw:
-            raise Exception('location cast failed')
+            assert queryVal is not None
+            return queryVal
         return location
 
     def parseBedroomOptions(self, opts: str, queryVal: Any | None = None) -> list[int]:

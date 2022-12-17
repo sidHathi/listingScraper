@@ -1,6 +1,7 @@
 from typing import Any, Coroutine, cast
 from geopy.geocoders import Nominatim
 from geopy.location import Location
+from geopy.exc import GeocoderTimedOut, GeocoderParseError, GeocoderServiceError
 import re
 
 from ..interfaces.ListingService import ListingService
@@ -27,14 +28,22 @@ class FBMListingService(ListingService):
             assert queryVal is not None
             return queryVal
 
-        geolocator = Nominatim(user_agent='housing_scraper')
-        geocoded = geolocator.geocode(addr, exactly_one=True, addressdetails=True)
-        if geocoded is None:
-            print(addr)
+        
+        location: Location | None = None
+        try: 
+            geolocator = Nominatim(user_agent='housing_scraper')
+            geocoded = geolocator.geocode(locStr, exactly_one=True, addressdetails=True)
+            if geocoded is None:
+                print(locStr)
+                print('invalid location')
+                assert(queryVal is not None)
+                return queryVal
+            location = cast(Location, geocoded)
+        except (GeocoderTimedOut, GeocoderServiceError, GeocoderParseError) as e:
+            print(locStr)
             print('invalid location')
-            assert(queryVal is not None)
-            return queryVal
-        location: Location = cast(Location, geocoded)
+            print(e)
+            
         if location is None or 'address' not in location.raw:
             raise Exception('location cast failed')
         return location

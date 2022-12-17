@@ -25,7 +25,7 @@ config = dotenv_values('.env')
 
 class RequestHub:
     def __init__(self) -> None:
-        assert config['PROXY_USE'] is not None
+        assert config['PROXY_AVAILABLE'] is not None
         print('rqh initializing')
         software_names: list[str] = [SoftwareName.CHROME.value]
         operating_systems: list[str] = [OperatingSystem.WINDOWS.value, OperatingSystem.LINUX.value, OperatingSystem.MACOS.value]
@@ -38,13 +38,11 @@ class RequestHub:
         self.prox.http_proxy = proxyUrl
         self.prox.ssl_proxy = proxyUrl
 
-        match config['PROXY_USE']:
-            case 'always':
-                self.proxyUse = True
-            case 'never':
-                self.proxyUse = False
-            case 'ifNeeded':
-                self.proxyUse = None
+        match config['PROXY_AVAILABLE']:
+            case 'yes':
+                self.proxyAvailable = True
+            case 'no':
+                self.proxyAvailable = False
 
     def tryRequest(self, url: str, elemOnSuccess: TagModel, proxy: bool) -> str | None:
         userAgent: str = self.user_agent_rotator.get_random_user_agent()
@@ -87,7 +85,7 @@ class RequestHub:
             browser.close()
             return html
 
-    def executeRequest(self, url: str, elemOnSuccess: TagModel) -> str | None:
+    def executeRequest(self, url: str, elemOnSuccess: TagModel, proxy: bool) -> str | None:
         '''
         TO-DO: Implement the following functionality 
         1. Randomly choose a browser from the list of simpleBrowsers
@@ -103,12 +101,12 @@ class RequestHub:
         3. Return the first successful result of None
         '''
         # Step one
-        if self.proxyUse is None or not self.proxyUse:
+        if not self.proxyAvailable or not proxy:
             res: str | None = self.tryRequest(url, elemOnSuccess, False)
             if res is not None:
                 print("valid result without proxy")
                 return res
-        if self.proxyUse is None or self.proxyUse:
+        if self.proxyAvailable and proxy:
             res: str | None = self.tryRequest(url, elemOnSuccess, True)
             if res is not None:
                 print("valid result with proxy")

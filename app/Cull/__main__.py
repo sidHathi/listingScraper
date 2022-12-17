@@ -25,7 +25,8 @@ async def main():
             identifiers= {'data-tid': 'search-results-page'}
         ),
         expirationTimeInDays=5,
-        elemOnPageLoad=TagModel(tagType='h1', identifiers={'data-tid':'property-title'})
+        elemOnPageLoad=TagModel(tagType='h1', identifiers={'data-tid':'property-title'}),
+        cullWithProxy=False
     )
     fbmCullingModel: CullingModel = CullingModel(
         targetVal='unavailable',
@@ -42,7 +43,8 @@ async def main():
         ],
         notFoundTag=None,
         expirationTimeInDays=5,
-        elemOnPageLoad=TagModel(tagType='h1', identifiers={'class':'x1heor9g x1qlqyl8 x1pd3egz x1a2a7pz x193iq5w xeuugli'})
+        elemOnPageLoad=TagModel(tagType='h1', identifiers={'class':'x1heor9g x1qlqyl8 x1pd3egz x1a2a7pz x193iq5w xeuugli'}),
+        cullWithProxy=True
     )
     cullingMap = {
         'facebook': fbmCullingModel,

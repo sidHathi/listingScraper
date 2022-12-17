@@ -28,7 +28,8 @@ class Scraper:
         paginationModel: PaginationModel | None,
         parsingModel: ParsingModel,
         dbInterface: DBInterface,
-        requestHub:  RequestHub) -> None:
+        requestHub:  RequestHub, 
+        scrapeWithProxy: bool) -> None:
         self.urlString: str = urlString
         self.urlService: UrlService = urlService
         self.listingService: ListingService = listingService
@@ -39,6 +40,7 @@ class Scraper:
         self.parsingModel: ParsingModel = parsingModel
         self.dbInterface: DBInterface = dbInterface
         self.requestHub = requestHub
+        self.scrapeWithProxy = scrapeWithProxy
 
 
     def searchHtmlPull(self, query: Query) -> None:
@@ -50,7 +52,7 @@ class Scraper:
         if url is None:
             return
         
-        baseHtml = self.requestHub.executeRequest(url, self.parsingModel.targetTag)
+        baseHtml = self.requestHub.executeRequest(url, self.parsingModel.targetTag, self.scrapeWithProxy)
         if baseHtml is None:
             self.searchHtmlPages = []
             return
@@ -71,7 +73,7 @@ class Scraper:
         rawPages: list[str | None] = []
         for url in urls:
             if url not in alreadyScraped:
-                rawPages.append(self.requestHub.executeRequest(url, self.parsingModel.listingService.getOnSuccessTag()))
+                rawPages.append(self.requestHub.executeRequest(url, self.parsingModel.listingService.getOnSuccessTag(), self.scrapeWithProxy))
                 
         def getSoup(page) -> BeautifulSoup:
             return BeautifulSoup(page, 'html.parser')
