@@ -1,0 +1,2 @@
+0 */6 * * * cd scraper && python3 -m app.Scrape
+0 7 * * * cd scraper && python3 -m app.Cull

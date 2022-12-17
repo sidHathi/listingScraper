@@ -1,12 +1,27 @@
-from UrlService import UrlService
+
+from typing import Any
 from geopy.location import Location
-from QueryParams import QueryParam, REType, LeaseTerm
-from Query import Query
+import re
+
+from ..enums import QueryParam, REType, LeaseTerm, UrlFieldType
+from ..models.Query import Query
+from ..interfaces.UrlService import UrlService
 
 class RentUrlService(UrlService):
+    def baseUrl(self) -> str:
+        return 'https://www.rent.com/'
+
+    def paramSeparator(self) -> str:
+        return '_'
+
+    def usesQueryParams(self) -> bool:
+        return False
+
     def location(self, queryLocation: Location) -> list[str]:
         addr = queryLocation.raw['address']
-        return [addr.get('state'), addr.get('city', '')]
+        if 'city' not in addr or 'state' not in addr:
+            return []
+        return [re.sub(' ', '-', addr['state'].lower()), re.sub(' ', '-', addr['city'].lower())]
     
     def reType(self, param: REType) -> str:
         match(param):
@@ -28,10 +43,11 @@ class RentUrlService(UrlService):
             return '4-bedroom' 
         return None
 
-    def priceRange(self, param: list[int]) -> str | None:
+    def priceRange(self, param: list[int]) -> list[str]:
+        # returns [min, max] as strings
         if (len(param) < 2):
-            return None
-        return f"max-price-{param[1]}"
+            return []
+        return ['', f"max-price-{param[1]}"]
 
     def leaseDuration(self, param: int) -> str | None:
         return None
@@ -41,19 +57,28 @@ class RentUrlService(UrlService):
             return 'short-term-available'
         return None
 
-    def composeUrl(self, query: Query):
+    def pets(self, param: bool) -> str | None:
+        if param:
+            return 'pet-friendly'
+        return None
+
+    def transit(self, param: bool) -> str | None:
+        return None
+
+    def composeUrl(self, query: Query) -> dict[UrlFieldType, Any]:
         queryDict = query.getQueryParamDict();
-        locationArr = queryDict[QueryParam.Location]
+        locationArr = self.location(queryDict[QueryParam.Location])
         return {
-            'prefixes': [],
-            'pathPrefixes': [
+            UrlFieldType.Prefix: None,
+            UrlFieldType.PathPrefixes: [
                 locationArr[0],
                 f"{locationArr[1]}-{self.reType(queryDict[QueryParam.REType])}"
             ],
-            'params': [
+            UrlFieldType.Params: [
                 self.bedrooms(queryDict[QueryParam.Bedrooms]),
-                self.priceRange(queryDict[QueryParam.PriceRange]),
+                *self.priceRange(queryDict[QueryParam.PriceRange]),
                 self.leaseDuration(queryDict[QueryParam.LeaseDuration]),
-                self.leaseTerm(queryDict[QueryParam.LeaseTerm])
+                self.leaseTerm(queryDict[QueryParam.LeaseTerm]),
+                self.pets(queryDict[QueryParam.Pets])
             ]
         }
