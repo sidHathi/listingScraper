@@ -1,7 +1,7 @@
 from typing import Any, Coroutine, cast
 from geopy.geocoders import Nominatim
 from geopy.location import Location
-from geopy.exc import GeocoderTimedOut, GeocoderParseError, GeocoderServiceError
+from geopy.exc import GeocoderTimedOut, GeocoderParseError, GeocoderServiceError, GeocoderUnavailable
 import re
 
 from ..interfaces.ListingService import ListingService
@@ -43,7 +43,7 @@ class FBMListingService(ListingService):
             print(locStr)
             print('invalid location')
             print(e)
-            
+
         if location is None or 'address' not in location.raw:
             raise Exception('location cast failed')
         return location

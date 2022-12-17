@@ -1,7 +1,7 @@
 from typing import Any, cast
 from geopy.geocoders import Nominatim
 from geopy.location import Location
-from geopy.exc import GeocoderTimedOut, GeocoderParseError, GeocoderServiceError
+from geopy.exc import GeocoderTimedOut, GeocoderParseError, GeocoderServiceError, GeocoderUnavailable
 import re
 
 from ..interfaces.ListingService import ListingService
@@ -31,7 +31,7 @@ class RentListingService(ListingService):
                 assert(queryVal is not None)
                 return queryVal
             location = cast(Location, geocoded)
-        except (GeocoderTimedOut, GeocoderServiceError, GeocoderParseError) as e:
+        except (GeocoderTimedOut, GeocoderServiceError, GeocoderParseError, GeocoderUnavailable) as e:
             print(locStr)
             print('invalid location')
             print(e)
