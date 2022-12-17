@@ -50,7 +50,7 @@ class App:
             requestHub=self.requestHub
         )
 
-        return [fbmScraper, rentScraper]
+        return [rentScraper]
 
     async def run(self):
         queries: list[Query] = self.getQueries()
