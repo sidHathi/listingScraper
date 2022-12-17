@@ -4,7 +4,7 @@
 
 *Code Documentation still in progress*
 
-This repository is one part of a housing aggregator web service for students. Its purpose is to scrape rental listings across multiple public listing websites and store them in a mongodb database collection. It also contains additional functionality to review listings and cull expired/old ones, and to migrate the database schema when additional fields are added/removed.
+This repository is one part of a housing aggregator web service for students. Its purpose is to scrape rental listings across multiple public listing websites and store them in a mongodb database collection. It also contains additional functionality to review listings, cull expired/old ones, and to migrate the database schema when additional fields are added/removed.
 
 ### Scrape
 
