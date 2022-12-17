@@ -13,13 +13,13 @@ The [Scrape](app/Scrape) submodule is where the centralized scraper lives. Runni
 #### Usage:
 To install dependencies:
 
-```python
+```bash
 pip install -r requirements.txt
 ```
 
 To run the scraper:
 
-```python
+```bash
 python3 -m app.Scrape
 ```
 
@@ -30,12 +30,12 @@ The [Cull](app/Cull) submodule is where the Culler lives. The Culler looks at ev
 #### Usage:
 To install dependencies:
 
-```python
+```bash
 pip install -r requirements.txt
 ```
 
 To run the culler:
 
-```python
+```bash
 python3 -m app.Cull
 ```
