@@ -26,10 +26,11 @@ class Culler:
         # one retry for possible connection error
         html: str | None = self.requestHub.executeRequest(
             url=url,
-            elemOnSuccess=self.cullingModels[provider].elemOnPageLoad
+            elemOnSuccess=self.cullingModels[provider].elemOnPageLoad,
+            proxy=False # no proxy use to conserve data throughput
         )
         if html is None:
-            return True
+            return False
 
         soup: BeautifulSoup = BeautifulSoup(html, 'html.parser')
         notFoundTag: TagModel | None = self.cullingModels[provider].notFoundTag

@@ -1,12 +1,37 @@
 from selenium import webdriver
 from selenium.common.exceptions import WebDriverException
 from bs4 import BeautifulSoup
-from typing import Any, AnyStr
+from typing import Any, cast
 import re
-
+from geopy import Location
+from geopy.geocoders import GoogleV3
+from geopy.exc import GeocoderAuthenticationFailure, GeocoderInsufficientPrivileges, GeocoderNotFound, GeocoderParseError, GeocoderQueryError, GeocoderQuotaExceeded, GeocoderRateLimited, GeocoderServiceError, GeocoderTimedOut, GeocoderUnavailable, GeopyError
+from geopy.extra.rate_limiter import RateLimiter
+from dotenv import dotenv_values
 
 from ..models.TagModel import TagModel
 from ..enums import LeaseTerm, ListingField
+from ..constants import maxLocationRetires
+
+config = dotenv_values('.env')
+
+def encodeLocation(addressString: str) -> Location | None:
+    if config['GOOGLE_MAPS_API_KEY'] is None:
+        return None
+    for _ in range(maxLocationRetires):
+        try:
+            geocoder = GoogleV3(api_key=config['GOOGLE_MAPS_API_KEY'])
+            geocode = RateLimiter(geocoder.geocode, min_delay_seconds=1, return_value_on_exception=None)
+            location = geocode(addressString)
+            if location is None:
+                continue
+            cast(Location, location)
+            return location
+        except (GeocoderAuthenticationFailure, GeocoderInsufficientPrivileges, GeocoderNotFound, GeocoderParseError, GeocoderQueryError, GeocoderQuotaExceeded, GeocoderRateLimited, GeocoderServiceError, GeocoderTimedOut, GeocoderUnavailable, GeopyError) as e:
+            print('location cast failed')
+            print(e)
+            continue
+    return None
 
 async def htmlPull(url: str, browser: webdriver.Chrome, timeout: int) -> str | None:
     try:
@@ -94,7 +119,7 @@ def findCityStatePair(domContent: str) -> str | None:
     return matchRegex(r'(([A-Z][a-z]+[\s,.]{0,2}){1,4}[A-Z]{2,3})', domContent, [])
 
 def findPrice(domContent: str) -> str | None:
-    priceStr = matchRegex(r'(\$[\d.,]+\s{0,1}\/)', domContent, [])
+    priceStr = matchRegex(r'(\$[\d.,]+\s{0,1})', domContent, [])
     if priceStr is None:
         return None
     

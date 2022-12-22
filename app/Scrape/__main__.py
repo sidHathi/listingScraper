@@ -1,7 +1,5 @@
 import sys
 import asyncio
-from geopy.geocoders import Nominatim
-from geopy.location import Location
 from typing import cast
 
 from ..DBInterface import DBInterface

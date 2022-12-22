@@ -5,7 +5,7 @@ from geopy.exc import GeocoderTimedOut, GeocoderParseError, GeocoderServiceError
 import re
 
 from ..interfaces.ListingService import ListingService
-from ..utils.scrapingUtils import findIntegerListMonths, matchLeaseTermByKeyword
+from ..utils.scrapingUtils import findIntegerListMonths, matchLeaseTermByKeyword, encodeLocation
 from ..constants import keywordMap, termToMonthMap
 from ..enums import ListingField, LeaseTerm
 from ..models.TagModel import TagModel
@@ -21,22 +21,8 @@ class RentListingService(ListingService):
         return nameStr
 
     def parseLocation(self, locStr: str, queryVal: Any | None = None) -> Location:
-        location: Location | None = None
-        try: 
-            geolocator = Nominatim(user_agent='housing_scraper')
-            geocoded = geolocator.geocode(locStr, exactly_one=True, addressdetails=True)
-            if geocoded is None:
-                print(locStr)
-                print('invalid location')
-                assert(queryVal is not None)
-                return queryVal
-            location = cast(Location, geocoded)
-        except (GeocoderTimedOut, GeocoderServiceError, GeocoderParseError, GeocoderUnavailable) as e:
-            print(locStr)
-            print('invalid location')
-            print(e)
-
-        if location is None or 'address' not in location.raw:
+        location: Location | None = encodeLocation(locStr)
+        if location is None:
             assert queryVal is not None
             return queryVal
         return location

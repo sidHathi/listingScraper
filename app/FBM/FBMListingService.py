@@ -5,7 +5,7 @@ from geopy.exc import GeocoderTimedOut, GeocoderParseError, GeocoderServiceError
 import re
 
 from ..interfaces.ListingService import ListingService
-from ..utils.scrapingUtils import findIntegerListMonths, matchLeaseTermByKeyword, findCityStatePair, findCompleteAddress, findPrice
+from ..utils.scrapingUtils import findIntegerListMonths, matchLeaseTermByKeyword, findCityStatePair, findCompleteAddress, findPrice, encodeLocation
 from ..constants import keywordMap, termToMonthMap
 from ..enums import ListingField, LeaseTerm
 from ..models.TagModel import TagModel
@@ -28,24 +28,10 @@ class FBMListingService(ListingService):
             assert queryVal is not None
             return queryVal
 
-        
-        location: Location | None = None
-        try: 
-            geolocator = Nominatim(user_agent='housing_scraper')
-            geocoded = geolocator.geocode(locStr, exactly_one=True, addressdetails=True)
-            if geocoded is None:
-                print(locStr)
-                print('invalid location')
-                assert(queryVal is not None)
-                return queryVal
-            location = cast(Location, geocoded)
-        except (GeocoderTimedOut, GeocoderServiceError, GeocoderParseError) as e:
-            print(locStr)
-            print('invalid location')
-            print(e)
-
-        if location is None or 'address' not in location.raw:
-            raise Exception('location cast failed')
+        location: Location | None = encodeLocation(addr)
+        if location is None:
+            assert queryVal is not None
+            return queryVal
         return location
 
     def parseBedroomOptions(self, opts: str, queryVal: Any | None = None) -> list[int]:

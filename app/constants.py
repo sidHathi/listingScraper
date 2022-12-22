@@ -6,6 +6,8 @@ from .enums import ListingField
 from .models.TagModel import TagModel
 from .utils.genUtils import reverseDict
 
+maxLocationRetires = 2
+
 keywordMap: dict[str, LeaseTerm] = {
     "short-term": LeaseTerm.ShortTerm,
     "short term": LeaseTerm.ShortTerm,
