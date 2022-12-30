@@ -58,6 +58,7 @@ class FBMListingService(ListingService):
         return [int(lower), int(upper)]
 
     def parsePrice(self, price: str, queryVal: Any | None = None) -> int:
+        print("[PRICE]: " +price);
         numeric = findPrice(price)
         print(numeric)
         if numeric is None or numeric == '':
