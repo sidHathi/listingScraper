@@ -3,8 +3,8 @@ from dotenv import dotenv_values
 config = dotenv_values('.env')
 assert(config['CHROME_PATH'] is not None)
 
-HOSTNAME = 'http://gate.smartproxy.com'
-PORT = '7000'
+HOSTNAME = '69.30.199.122'
+PORT = '19004'
 ### DRIVER
 """
 Define the driver as follows:

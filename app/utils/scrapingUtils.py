@@ -119,7 +119,7 @@ def findCityStatePair(domContent: str) -> str | None:
     return matchRegex(r'(([A-Z][a-z]+[\s,.]{0,2}){1,4}[A-Z]{2,3})', domContent, [])
 
 def findPrice(domContent: str) -> str | None:
-    priceStr = matchRegex(r'(\$[\d.,]+\s{0,1})', domContent, [])
+    priceStr = matchRegex(r'(\$[\d.,]+[\s\/]+)', domContent, [])
     if priceStr is None:
         return None
     

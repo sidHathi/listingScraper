@@ -59,8 +59,10 @@ class FBMListingService(ListingService):
 
     def parsePrice(self, price: str, queryVal: Any | None = None) -> int:
         numeric = findPrice(price)
+        print(numeric)
         if numeric is None or numeric == '':
             return -1
+
         return int(numeric)
 
     def parseShortestLease(self, lease: str, queryVal: Any | None = None) -> int:
