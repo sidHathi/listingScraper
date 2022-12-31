@@ -118,17 +118,8 @@ class FBMListingService(ListingService):
             ],
             ListingField.ShortestLease: [
                 TagModel(tagType='div', identifiers={
-                    'class': 'xod5an3'
+                    'class': 'xb57i2i x1q594ok x5lxg6s x78zum5 xdt5ytf x6ikm8r x1ja2u2z x1pq812k x1rohswg xfk6m8 x1yqm8si xjx87ck x1l7klhg xs83m0k x2lwn1j xx8ngbg xwo3gff x1oyok0e x1odjw0f x1e4zzel x1n2onr6 xq1qtft x1iyjqo2 xqtp20y xx6bls6 xh8yej3 xiylbte'
                 }),
-                TagModel(tagType='div', identifiers={
-                    'class': 'xexx8yu x1pi30zi x18d9i69 x1swvt13'
-                }),
-                TagModel(tagType='div', identifiers={
-                    'class': 'xz9dl7a x4uap5 xsag5q8 xkhd6sd x126k92a'
-                }),
-                TagModel(tagType='span', identifiers={
-                    'class': 'x193iq5w xeuugli x13faqbe x1vvkbs xlh3980 xvmahel x1n0sxbx x1lliihq x1s928wv xhkezso x1gmr53x x1cpjm7i x1fgarty x1943h6x x4zkp8e x3x7a5m x6prxxf xvq8zen xo1l8bm xzsf02u'
-                })
             ],
             ListingField.Pets: None, # use query val
             ListingField.Transit: None # use query val
