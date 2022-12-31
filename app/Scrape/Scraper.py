@@ -147,6 +147,7 @@ class Scraper:
                      continue
                 matchingTags = followTagMap(fieldMap, page)
                 if len(matchingTags) < 1:
+                    print(f'NO MATCHING TAG FOUND FOR {field}');
                     if queryVal is not None:
                         listingJson[listingMap[field]] = queryToListingFieldConvert(queryVal, field)
                         continue
