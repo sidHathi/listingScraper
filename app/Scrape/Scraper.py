@@ -82,6 +82,7 @@ class Scraper:
             rawPages
         ))
         pages: list[BeautifulSoup] = list(map(getSoup, filteredPages))
+        print(pages[0].prettify())
         self.listingHtmlPages = dict(zip(urls, pages))
 
 
