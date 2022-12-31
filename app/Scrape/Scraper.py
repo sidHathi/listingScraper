@@ -148,7 +148,7 @@ class Scraper:
                      assert(queryVal is not None)
                      listingJson[listingMap[field]] = queryVal
                      continue
-                print(page)
+                print(page.prettify())
                 matchingTags = followTagMap(fieldMap, page)
                 if len(matchingTags) < 1:
                     print(f'NO MATCHING TAG FOUND FOR {field}');
