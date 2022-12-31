@@ -61,7 +61,7 @@ class Scraper:
         # ADD PAGINATION HERE
 
         self.searchHtmlPages = [soup]
-        print(soup.prettify())
+        # print(soup.prettify())
         return
 
 
@@ -78,7 +78,7 @@ class Scraper:
                 
         def getSoup(page) -> BeautifulSoup:
             soup = BeautifulSoup(page, 'html.parser')
-            print(soup.prettify())
+            # print(soup.prettify())
             return soup
         filteredPages: list[str] = cast(list[str], filter(
             lambda page: page is not None,
@@ -148,6 +148,7 @@ class Scraper:
                      assert(queryVal is not None)
                      listingJson[listingMap[field]] = queryVal
                      continue
+                print(page)
                 matchingTags = followTagMap(fieldMap, page)
                 if len(matchingTags) < 1:
                     print(f'NO MATCHING TAG FOUND FOR {field}');
