@@ -77,7 +77,9 @@ class Scraper:
                 rawPages.append(self.requestHub.executeRequest(url, self.parsingModel.listingService.getOnSuccessTag(), self.scrapeWithProxy))
                 
         def getSoup(page) -> BeautifulSoup:
-            return BeautifulSoup(page, 'html.parser')
+            soup = BeautifulSoup(page, 'html.parser')
+            print(soup.prettify())
+            return soup
         filteredPages: list[str] = cast(list[str], filter(
             lambda page: page is not None,
             rawPages
