@@ -49,6 +49,7 @@ class RequestHub:
         opts = Options()
         opts.add_argument(f'user-agent={userAgent}')
         opts.add_argument('--no-sandbox')
+        opts.add_argument('--headless')
         opts.add_argument('--window-size=1920x1080')
         opts.add_argument('--single-process')
         opts.add_argument('--disable-dev-shm-usage')
