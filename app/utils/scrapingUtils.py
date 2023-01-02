@@ -33,6 +33,32 @@ def encodeLocation(addressString: str) -> Location | None:
             continue
     return None
 
+def parseGMV3Location(location: Location, shortened: bool = False) -> list[str] | None:
+    locMap: dict[str, Any] = location.raw
+    if 'address_components' not in locMap:
+        return None
+    
+    city = ""
+    state = ""
+    addr_components: list[dict[str, Any]] = locMap['address_components']
+    for comp in addr_components:
+        if comp['types'][0] == 'locality' and 'long_name' in comp:
+            city = comp['long_name']
+        if comp['types'][0] == 'administrative_area_level_1':
+            if shortened and 'short_name' in comp:
+                state = comp['short_name']
+            elif 'long_name' in comp:
+                state = comp['long_name']
+    return [city, state]
+
+def parseNominatimLocation(location: Location) -> list[str] | None:
+    if 'address' not in location.raw:
+        return None
+    addr: dict[str, Any] = location.raw['address']
+    if 'city' not in addr or 'state' not in addr:
+        return None
+    return [addr['city'], addr['state']]
+            
 async def htmlPull(url: str, browser: webdriver.Chrome, timeout: int) -> str | None:
     try:
         browser.get(url)
@@ -119,7 +145,7 @@ def findCityStatePair(domContent: str) -> str | None:
     return matchRegex(r'(([A-Z][a-z]+[\s,.]{0,2}){1,4}[A-Z]{2,3})', domContent, [])
 
 def findPrice(domContent: str) -> str | None:
-    priceStr = matchRegex(r'(\$[\d.,]+\s{0,1})', domContent, [])
+    priceStr = matchRegex(r'(\$[\d.,]+[\s\/]+)', domContent, [])
     if priceStr is None:
         return None
     

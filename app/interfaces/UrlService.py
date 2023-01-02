@@ -106,11 +106,11 @@ class UrlService(ABC):
         for param in params:
             if param is None or len(param) == 0:
                 continue
-            print(param)
+            # print(param)
             constructedUrl += param
             constructedUrl += self.paramSeparator()
 
         if len(params) > 0:
-            constructedUrl = constructedUrl[:-1]
+            constructedUrl = constructedUrl[:-len(self.paramSeparator())]
             
         return constructedUrl

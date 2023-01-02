@@ -6,6 +6,7 @@ from ..interfaces.UrlService import UrlService
 from ..enums import REType, LeaseTerm, QueryParam, UrlFieldType
 from .fbConstants import validLocations, shortenedLocations, quadTree, searchResultsMaxDist
 from ..models.Query import Query
+from ..utils.scrapingUtils import parseGMV3Location, parseNominatimLocation
 
 class FBMUrlService(UrlService):
     def baseUrl(self) -> str:
@@ -18,12 +19,10 @@ class FBMUrlService(UrlService):
         return True
 
     def location(self, queryLocation: Location) -> list[str]:
-        addr = queryLocation.raw['address']
-        if 'city' not in addr:
-            return []
+        city, _ = parseNominatimLocation(queryLocation) or parseGMV3Location(queryLocation) or [None, None]
 
-        if addr['city'] in validLocations:
-            cityStr = addr['city'].lower()
+        if city is not None:
+            cityStr = city.lower()
             if cityStr in shortenedLocations:
                 cityStr = shortenedLocations[cityStr]
             return [cityStr]

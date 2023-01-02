@@ -18,7 +18,7 @@ from .selenium_python import smartproxy
 from .models.TagModel import TagModel
 
 
-proxyUrl: str = 'http://gate.smartproxy.com:7000'
+proxyUrl: str = '69.30.199.122:19004'
 maxRetires: int = 3
 requestTimeout: int = 10
 config = dotenv_values('.env')
@@ -59,6 +59,7 @@ class RequestHub:
 
         if proxy:
             opts.add_argument(f'--proxy-server={proxyUrl}')
+            opts.add_argument('--headless')
             browser = ucChrome(options=opts, desired_capabilities=smartproxy())
         else:
             browser = ucChrome(options=opts)

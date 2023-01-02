@@ -1,4 +1,3 @@
-
 from typing import Any
 from geopy.location import Location
 import re
@@ -6,6 +5,7 @@ import re
 from ..enums import QueryParam, REType, LeaseTerm, UrlFieldType
 from ..models.Query import Query
 from ..interfaces.UrlService import UrlService
+from ..utils.scrapingUtils import parseNominatimLocation, parseGMV3Location
 
 class RentUrlService(UrlService):
     def baseUrl(self) -> str:
@@ -18,10 +18,10 @@ class RentUrlService(UrlService):
         return False
 
     def location(self, queryLocation: Location) -> list[str]:
-        addr = queryLocation.raw['address']
-        if 'city' not in addr or 'state' not in addr:
+        city, state = parseNominatimLocation(queryLocation) or parseGMV3Location(queryLocation) or [None, None]
+        if city is None or state is None:
             return []
-        return [re.sub(' ', '-', addr['state'].lower()), re.sub(' ', '-', addr['city'].lower())]
+        return [re.sub(' ', '-', state.lower()), re.sub(' ', '-', city.lower())]
     
     def reType(self, param: REType) -> str:
         match(param):
