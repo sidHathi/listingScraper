@@ -52,7 +52,7 @@ class App:
             scrapeWithProxy=True
         )
 
-        return [fbmScraper, rentScraper]
+        return [rentScraper]
 
     async def run(self):
         queries: list[Query] = self.getQueries()

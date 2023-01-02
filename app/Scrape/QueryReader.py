@@ -1,11 +1,15 @@
 from typing import Any, cast
 from geopy.location import Location
-from geopy.geocoders import Nominatim
+from geopy.geocoders import Nominatim, GoogleV3
+from geopy.extra.rate_limiter import RateLimiter
+from dotenv import dotenv_values
 
 from ..DBInterface import DBInterface
 from ..models.Query import Query
 from ..enums import REType, LeaseTerm
 from ..constants import reversedEnumMaps
+
+config = dotenv_values('.env')
 
 class QueryReader:
     def __init__(self, dbInterface):
@@ -16,8 +20,9 @@ class QueryReader:
         self.results = self.dbInterface.getQueries()
 
     def parseLocation(self, locStr: str) -> Location:
-        geolocator = Nominatim(user_agent='housing_scraper')
-        loc = geolocator.geocode(locStr, addressdetails=True)
+        geocoder = GoogleV3(api_key=config['GOOGLE_MAPS_API_KEY'])
+        geocode = RateLimiter(geocoder.geocode, min_delay_seconds=1, return_value_on_exception=None)
+        loc = geocode(locStr)
         if loc is None:
             return Location(locStr, (0.0, 0.0, 0.0), {})
         cast(Location, loc)

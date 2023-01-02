@@ -20,7 +20,7 @@ class Culler:
         self.dbUrlNamePairs: list[dict[str, Any]] | None = None
 
     def getDbUrls(self):
-        self.dbUrlNamePairs = self.dbInterface.getListingUrlsByProvider()
+        self.dbUrlNamePairs = self.dbInterface.getListingsCullingInfo()
 
     def checkListingIsExpired(self, provider: str, url: str) -> bool:
         # one retry for possible connection error
@@ -60,10 +60,12 @@ class Culler:
         for pair in self.dbUrlNamePairs:
             assert 'scrapeTime' in pair
             assert 'providerName' in pair
+            assert 'price' in pair
             provider = pair['providerName']
             currentTime = datetime.today()
             timeDif: timedelta = currentTime - pair['scrapeTime']
-            if timeDif.days > self.cullingModels[provider].expirationTimeInDays:
+            price = pair['price']
+            if timeDif.days > self.cullingModels[provider].expirationTimeInDays or price < 0:
                 assert '_id' in pair
                 print(f'deleting {pair}')
                 self.dbInterface.removeListing(pair['_id'])
