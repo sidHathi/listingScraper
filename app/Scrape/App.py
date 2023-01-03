@@ -6,12 +6,14 @@ from ..models.Query import Query
 from ..interfaces.UrlService import UrlService
 from ..interfaces.ListingService import ListingService
 from ..models.ParsingModel import ParsingModel
-from ..constants import rentSearchingTag, fbmSearchingTag
+from ..constants import rentSearchingTag, fbmSearchingTag, zillowSearchingTag
 
 from ..FBM.FBMListingService import FBMListingService
 from ..FBM.FBMUrlService import FBMUrlService
 from ..Rent.RentListingService import RentListingService
 from ..Rent.RentUrlService import RentUrlService
+from ..Zillow.ZillowListingService import ZillowListingService
+from ..Zillow.ZillowUrlService import ZillowUrlService
 
 class App:
     def __init__(self, dbInterface: DBInterface, requestHub: RequestHub):
@@ -35,7 +37,8 @@ class App:
             parsingModel=rentParsingModel, 
             dbInterface = self.dbInterface, 
             requestHub=self.requestHub,
-            scrapeWithProxy=False
+            scrapeWithProxy=False,
+            scrapeHeadlessly=False
         )
 
         fbmUrlService: UrlService = FBMUrlService()
@@ -49,10 +52,26 @@ class App:
             parsingModel=fbmParsingModel, 
             dbInterface = self.dbInterface, 
             requestHub=self.requestHub,
-            scrapeWithProxy=True
+            scrapeWithProxy=True,
+            scrapeHeadlessly=True
         )
 
-        return [rentScraper]
+        zillowUrlService: UrlService = ZillowUrlService()
+        zillowListingService: ListingService = ZillowListingService()
+        zillowParsingModel = ParsingModel(targetTag=zillowSearchingTag, requiresTagMap=False, listingService=zillowListingService)
+        zillowScraper: Scraper = Scraper(
+            urlString ='https://www.zillow.com', 
+            urlService=zillowUrlService, 
+            listingService=zillowListingService,
+            paginationModel=None, 
+            parsingModel=zillowParsingModel, 
+            dbInterface = self.dbInterface, 
+            requestHub=self.requestHub,
+            scrapeWithProxy=False,
+            scrapeHeadlessly=False
+        )
+
+        return [zillowScraper]
 
     async def run(self):
         queries: list[Query] = self.getQueries()

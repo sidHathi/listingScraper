@@ -11,6 +11,16 @@ from ..Zillow.ZillowUrlService import ZillowUrlService
 from ..enums import REType, LeaseTerm
 from ..utils.scrapingUtils import followTagMap, findIntegerListMonths, findIntegerMonths
 from ..constants import usStateToAbbrev
+from ..interfaces.UrlService import UrlService
+from ..interfaces.ListingService import ListingService
+from ..models.ParsingModel import ParsingModel
+from ..constants import rentSearchingTag, fbmSearchingTag, zillowSearchingTag
+from ..Scrape.Scraper import Scraper
+from ..DBInterface import DBInterface
+from ..RequestHub import RequestHub
+
+from ..Zillow.ZillowListingService import ZillowListingService
+from ..Zillow.ZillowUrlService import ZillowUrlService
 
 config = dotenv_values('.env')
 
@@ -79,4 +89,46 @@ def testZillowUrl() -> bool:
         print('url construct failed')
         return False
     print(url)
+    return True
+
+def testZillowScrape() -> bool:
+    testLocationStr = 'San Francisco, CA'
+    geocoder = GoogleV3(api_key=config['GOOGLE_MAPS_API_KEY'])
+    geocode = RateLimiter(geocoder.geocode, min_delay_seconds=1, return_value_on_exception=None)
+    encoded = geocode(testLocationStr)
+    if encoded is None:
+        print('location encode failed')
+        return False
+
+    testQuery: Query = Query(
+        name='unitTestQuery',
+        location=encoded,
+        reType=REType.Apartment,
+        bedrooms=1,
+        priceRange=[500, 4000],
+        leaseTerm=LeaseTerm.ShortTerm,
+        leaseDuration=None,
+        pets=False,
+        transit=False)
+    
+    dbInterface: DBInterface = DBInterface()
+    requestHub: RequestHub = RequestHub()
+
+    zillowUrlService: UrlService = ZillowUrlService()
+    zillowListingService: ListingService = ZillowListingService()
+    zillowParsingModel = ParsingModel(targetTag=zillowSearchingTag, requiresTagMap=False, listingService=zillowListingService)
+    zillowScraper: Scraper = Scraper(
+        urlString ='', 
+        urlService=zillowUrlService, 
+        listingService=zillowListingService,
+        paginationModel=None, 
+        parsingModel=zillowParsingModel, 
+        dbInterface = dbInterface, 
+        requestHub=requestHub,
+        scrapeWithProxy=True,
+        scrapeHeadlessly=False
+    )
+
+    zillowScraper.executeQuery(testQuery)
+
     return True

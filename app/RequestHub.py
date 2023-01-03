@@ -44,22 +44,27 @@ class RequestHub:
             case 'no':
                 self.proxyAvailable = False
 
-    def tryRequest(self, url: str, elemOnSuccess: TagModel, proxy: bool) -> str | None:
+    def tryRequest(self, url: str, elemOnSuccess: TagModel, proxy: bool = False, headless: bool = False) -> str | None:
         userAgent: str = self.user_agent_rotator.get_random_user_agent()
         opts = Options()
         opts.add_argument(f'user-agent={userAgent}')
-        opts.add_argument('--no-sandbox')
-        opts.add_argument('--window-size=1920x1080')
+        opts.add_argument('accept=text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng')
+        opts.add_argument('accept-encoding=gzip,deflate,br')
+        opts.add_argument('accept-language=en-US,en;q=0.8')
+        opts.add_argument('dnt=1')
+        opts.add_argument('upgrade-insecure-requests=1')
         opts.add_argument('--single-process')
         opts.add_argument('--disable-dev-shm-usage')
         opts.add_argument('--ignore-certificate-errors')
         opts.add_argument('--disable-blink-features=AutomationControlled')
-        opts.add_argument('--disable-blink-features=AutomationControlled')
         opts.add_argument("--disable-infobars")
+        
+        if headless:
+            opts.add_argument('--no-sandbox')
+            opts.add_argument('--headless')
 
         if proxy:
             opts.add_argument(f'--proxy-server={proxyUrl}')
-            opts.add_argument('--headless')
             browser = ucChrome(options=opts, desired_capabilities=smartproxy())
         else:
             browser = ucChrome(options=opts)
@@ -74,6 +79,7 @@ class RequestHub:
                 )
             except TimeoutException:
                 print(f'timeout for {url}')
+                sleep(6)
                 return None
             except WebDriverException as e:
                 print(e)

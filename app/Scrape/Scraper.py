@@ -29,7 +29,8 @@ class Scraper:
         parsingModel: ParsingModel,
         dbInterface: DBInterface,
         requestHub:  RequestHub, 
-        scrapeWithProxy: bool) -> None:
+        scrapeWithProxy: bool = False,
+        scrapeHeadlessly: bool = False) -> None:
         self.urlString: str = urlString
         self.urlService: UrlService = urlService
         self.listingService: ListingService = listingService
@@ -41,6 +42,7 @@ class Scraper:
         self.dbInterface: DBInterface = dbInterface
         self.requestHub = requestHub
         self.scrapeWithProxy = scrapeWithProxy
+        self.scrapeHeadlessly = scrapeHeadlessly
 
 
     def searchHtmlPull(self, query: Query) -> None:

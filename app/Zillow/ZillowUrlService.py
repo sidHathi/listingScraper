@@ -39,7 +39,8 @@ class ZillowUrlService(UrlService):
 
     def bedrooms(self, param: int) -> str | None:
         baseStr: str = 'beds%22%3A%7B%22min%22%3A'
-        normalizedParam: int = max(param , 1)
+        # normalizedParam: int = max(param , 1)
+        normalizedParam: int = 1
         return f'{baseStr}{normalizedParam}'
 
     def priceRange(self, param: list[int]) -> list[str]:
@@ -70,7 +71,7 @@ class ZillowUrlService(UrlService):
 
     def composeUrl(self, query: Query) -> dict[UrlFieldType, Any]:
         queryDict = query.getQueryParamDict();
-        baseStr: str = 'searchQueryState=%7B%22pagination%22%3A%7B%7D%2C%22filterState%22%3A%7B%22price%22%3A%7B%22min%22%3A81035%2C%22max%22%3A445692%7D%2C%22fore%22%3A%7B%22value%22%3Afalse%7D%2C%22mf%22%3A%7B%22value%22%3Afalse'
+        baseStr: str = 'searchQueryState=%7B%22filterState%22%3A%7B%22price%22%3A%7B%22min%22%3A81035%2C%22max%22%3A445692%7D%2C%22fore%22%3A%7B%22value%22%3Afalse%7D%2C%22mf%22%3A%7B%22value%22%3Afalse'
         str2: str = 'auc%22%3A%7B%22value%22%3Afalse%7D%2C%22nc%22%3A%7B%22value%22%3Afalse%7D%2C%22fr%22%3A%7B%22value%22%3Atrue%7D%2C%22land%22%3A%7B%22value%22%3Afalse%7D%2C%22manu%22%3A%7B%22value%22%3Afalse%7D%2C%22fsbo%22%3A%7B%22value%22%3Afalse%7D%2C%22cmsn%22%3A%7B%22value%22%3Afalse%7D%2C%22fsba%22%3A%7B%22value%22%3Afalse'
         str3: str = 'sf%22%3A%7B%22value%22%3Afalse%7D%2C%22tow%22%3A%7B%22value%22%3Afalse%7D%2C%22sdog%22%3A%7B%22value%22%3Atrue'
         keyWordStr: str = ''

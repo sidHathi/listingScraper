@@ -1,5 +1,4 @@
 from typing import Any, cast
-from geopy.geocoders import Nominatim
 from geopy.location import Location
 from geopy.exc import GeocoderTimedOut, GeocoderParseError, GeocoderServiceError, GeocoderUnavailable
 import re
