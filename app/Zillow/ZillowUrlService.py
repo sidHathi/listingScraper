@@ -39,16 +39,16 @@ class ZillowUrlService(UrlService):
 
     def bedrooms(self, param: int) -> str | None:
         baseStr: str = 'beds%22%3A%7B%22min%22%3A'
-        # normalizedParam: int = max(param , 1)
-        normalizedParam: int = 1
+        normalizedParam: int = max(param , 1)
+        # normalizedParam: int = 1
         return f'{baseStr}{normalizedParam}'
 
     def priceRange(self, param: list[int]) -> list[str]:
         if len(param) == 0:
             return []
         baseStr: str = 'mp%22%3A%7B%22'
-        minStr: str = f'min%22%3A{param[0]}'
-        maxStr: str = f'max%22%3A{param[1]}'
+        minStr: str = f'min%22%3A{max(100, param[0])}'
+        maxStr: str = f'max%22%3A{max(100, param[1])}'
         return [f'{baseStr}{minStr}%2C%22{maxStr}']
 
     def leaseTerm(self, param: LeaseTerm) -> str | None:

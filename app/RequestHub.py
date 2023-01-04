@@ -92,7 +92,7 @@ class RequestHub:
             browser.close()
             return html
 
-    def executeRequest(self, url: str, elemOnSuccess: TagModel, proxy: bool) -> str | None:
+    def executeRequest(self, url: str, elemOnSuccess: TagModel, proxy: bool, headless: bool = False) -> str | None:
         '''
         TO-DO: Implement the following functionality 
         1. Randomly choose a browser from the list of simpleBrowsers
@@ -107,16 +107,11 @@ class RequestHub:
             (skip this step if proxyUse is false)
         3. Return the first successful result of None
         '''
-        # Step one
-        if not self.proxyAvailable or not proxy:
-            res: str | None = self.tryRequest(url, elemOnSuccess, False)
-            if res is not None:
-                print("valid result without proxy")
-                return res
-        if self.proxyAvailable and proxy:
-            res: str | None = self.tryRequest(url, elemOnSuccess, True)
-            if res is not None:
-                print("valid result with proxy")
-                return res
+        useProxy: bool = self.proxyAvailable and proxy
+        res: str | None = self.tryRequest(url, elemOnSuccess, useProxy, headless)
+        if res is not None:
+            print("valid result with proxy")
+            return res
+
 
 

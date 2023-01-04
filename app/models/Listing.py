@@ -18,6 +18,7 @@ class Listing(BaseModel):
     shortestLease: int # in months
     pets: bool
     transit: bool
+    pageRank: int
     # TO-DO: Add furnished field
 
     @validator('bedrooms')

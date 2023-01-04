@@ -71,7 +71,7 @@ class App:
             scrapeHeadlessly=False
         )
 
-        return [zillowScraper]
+        return [zillowScraper, fbmScraper, rentScraper]
 
     async def run(self):
         queries: list[Query] = self.getQueries()

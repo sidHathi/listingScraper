@@ -10,6 +10,7 @@ from undetected_chromedriver import Chrome as uChrome
 from ..interfaces.UrlService import UrlService
 from ..models.Query import Query
 from ..models.Listing import Listing
+from ..models.ScrapeResult import ScrapeResult
 from ..enums import ListingField
 from ..constants import listingMap, fieldDefaults
 from ..models.PaginationModel import PaginationModel
@@ -36,7 +37,7 @@ class Scraper:
         self.listingService: ListingService = listingService
 
         self.searchHtmlPages: list[BeautifulSoup] | None = None
-        self.listingHtmlPages: dict[str, BeautifulSoup] | None = None
+        self.listingHtmlPages: list[ScrapeResult] | None = None
         self.paginationModel: PaginationModel | None = paginationModel
         self.parsingModel: ParsingModel = parsingModel
         self.dbInterface: DBInterface = dbInterface
@@ -76,7 +77,7 @@ class Scraper:
         rawPages: list[str | None] = []
         for url in urls:
             if url not in alreadyScraped:
-                rawPages.append(self.requestHub.executeRequest(url, self.parsingModel.listingService.getOnSuccessTag(), self.scrapeWithProxy))
+                rawPages.append(self.requestHub.executeRequest(url, self.parsingModel.listingService.getOnSuccessTag(), self.scrapeWithProxy, self.scrapeHeadlessly))
                 
         def getSoup(page) -> BeautifulSoup:
             soup = BeautifulSoup(page, 'html.parser')
@@ -87,7 +88,10 @@ class Scraper:
             rawPages
         ))
         pages: list[BeautifulSoup] = list(map(getSoup, filteredPages))
-        self.listingHtmlPages = dict(zip(urls, pages))
+        scrapeResults: list[ScrapeResult] = []
+        for i in range(len(pages)):
+            scrapeResults.append(ScrapeResult(url=urls[i], page=pages[i],pageRank=i))
+        self.listingHtmlPages = scrapeResults
 
 
     def htmlParse(self) -> list[str]:
@@ -131,9 +135,14 @@ class Scraper:
 
         fieldMaps : dict[ListingField, list[TagModel] | None] = self.parsingModel.listingService.getFieldMaps()
         listings: list[Listing] = []
-        for url, page in pages.items():
+        for res in pages:
+            page = res.page
+            url = res.url
+            pageRank = res.pageRank
+
             listingJson: dict[str, Any] = {}
             listingJson[listingMap[ListingField.ProviderName]] = self.listingService.getProviderName()
+            listingJson['pageRank'] = pageRank
             for field in ListingField:
                 if field is ListingField.ProviderName:
                     continue

@@ -63,7 +63,7 @@ def testRegexMatching() -> bool:
 
     return True
 
-def testZillowUrl() -> bool:
+def testZillowUrl1() -> bool:
     testLocationStr = 'San Francisco, CA'
     geocoder = GoogleV3(api_key=config['GOOGLE_MAPS_API_KEY'])
     geocode = RateLimiter(geocoder.geocode, min_delay_seconds=1, return_value_on_exception=None)
@@ -76,11 +76,68 @@ def testZillowUrl() -> bool:
         name='unitTestQuery',
         location=encoded,
         reType=REType.Apartment,
-        bedrooms=1,
+        bedrooms=2,
         priceRange=[500, 4000],
-        leaseTerm=LeaseTerm.ShortTerm,
+        leaseTerm=LeaseTerm.LongTerm,
         leaseDuration=None,
         pets=False,
+        transit=False)
+
+    urlService: UrlService = ZillowUrlService()
+    url: str | None = urlService.construct(testQuery)
+    if url is None:
+        print('url construct failed')
+        return False
+    print(url)
+    return True
+
+def testZillowUrl2() -> bool:
+    testLocationStr = 'Seattle, WA'
+    geocoder = GoogleV3(api_key=config['GOOGLE_MAPS_API_KEY'])
+    geocode = RateLimiter(geocoder.geocode, min_delay_seconds=1, return_value_on_exception=None)
+    encoded = geocode(testLocationStr)
+    if encoded is None:
+        print('location encode failed')
+        return False
+
+    testQuery: Query = Query(
+        name='unitTestQuery',
+        location=encoded,
+        reType=REType.Apartment,
+        bedrooms=1,
+        priceRange=[0, 4000],
+        leaseTerm=LeaseTerm.ShortTerm,
+        leaseDuration=6,
+        pets=False,
+        transit=False)
+
+    urlService: UrlService = ZillowUrlService()
+    url: str | None = urlService.construct(testQuery)
+    if url is None:
+        print('url construct failed')
+        return False
+    print(url)
+    return True
+
+
+def testZillowUrl3() -> bool:
+    testLocationStr = 'Boston, MA'
+    geocoder = GoogleV3(api_key=config['GOOGLE_MAPS_API_KEY'])
+    geocode = RateLimiter(geocoder.geocode, min_delay_seconds=1, return_value_on_exception=None)
+    encoded = geocode(testLocationStr)
+    if encoded is None:
+        print('location encode failed')
+        return False
+
+    testQuery: Query = Query(
+        name='unitTestQuery',
+        location=encoded,
+        reType=REType.Apartment,
+        bedrooms=2,
+        priceRange=[0, 2000],
+        leaseTerm=LeaseTerm.ShortTerm,
+        leaseDuration=6,
+        pets=True,
         transit=False)
 
     urlService: UrlService = ZillowUrlService()
