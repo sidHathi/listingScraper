@@ -59,17 +59,18 @@ class RequestHub:
         opts.add_argument('--disable-blink-features=AutomationControlled')
         opts.add_argument("--disable-infobars")
         opts.add_argument('--no-sandbox')
+        opts.add_argument('–disable-setuid-sandbox')
         
         if headless:
             opts.add_argument('--headless')
 
-        if proxy:
-            opts.add_argument(f'--proxy-server={proxyUrl}')
-            browser = ucChrome(options=opts, desired_capabilities=smartproxy())
-        else:
-            browser = ucChrome(options=opts)
-
         for _ in range(maxRetires):
+            if proxy:
+                opts.add_argument(f'--proxy-server={proxyUrl}')
+                browser = ucChrome(options=opts, desired_capabilities=smartproxy())
+            else:
+                browser = ucChrome(options=opts)
+                
             try:
                 browser.get(url)
                 print(elemOnSuccess.getCssSelector())
