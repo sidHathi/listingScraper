@@ -110,8 +110,11 @@ class RequestHub:
         '''
         useProxy: bool = self.proxyAvailable and proxy
         res: str | None = self.tryRequest(url, elemOnSuccess, useProxy, headless)
-        if res is not None:
+        if res is not None and useProxy:
             print("valid result with proxy")
+            return res
+        elif res is not None and not useProxy:
+            print("valid result without proxy")
             return res
 
 
