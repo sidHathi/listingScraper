@@ -11,7 +11,7 @@ from dotenv import dotenv_values
 
 from ..models.TagModel import TagModel
 from ..enums import LeaseTerm, ListingField
-from ..constants import maxLocationRetires
+from ..constants import maxLocationRetires, termToMonthMap, keywordMap
 
 config = dotenv_values('.env')
 
@@ -163,3 +163,13 @@ def matchLeaseTermByKeyword(domContent: str, keyDict: dict[str, LeaseTerm]) -> l
         if matchKeyword(domContent, keyword):
             matches.append(keyDict[keyword])
     return matches
+
+def extractShortestLeaseFromDescription(description: str) -> int | None:
+        listMatches = findIntegerListMonths(description)
+        if listMatches is not None and len(listMatches) > 0:
+            return min(listMatches)
+        elif len(matchLeaseTermByKeyword(description, keywordMap)) > 0:
+            val: int | None = termToMonthMap[matchLeaseTermByKeyword(description, keywordMap)[0]]
+            if val is not None:
+                return val
+        return None

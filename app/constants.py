@@ -78,6 +78,10 @@ zillowSearchingTag: TagModel = TagModel(identifiers={
     'data-test': 'property-card-link',
 })
 
+apartmentsSearchingTag: TagModel = TagModel(identifiers={
+    'class': 'property-link',
+})
+
 fieldDefaults: dict[ListingField, Any] = {
     ListingField.Url: 'unavailable',
     ListingField.Name: 'unavailable',

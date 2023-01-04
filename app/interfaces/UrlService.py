@@ -100,7 +100,7 @@ class UrlService(ABC):
         else:
             constructedUrl += '/'
 
-        if self.usesQueryParams:
+        if self.usesQueryParams():
             constructedUrl += '?'
 
         for param in params:

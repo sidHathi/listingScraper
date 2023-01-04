@@ -44,7 +44,7 @@ class ZillowUrlService(UrlService):
         return f'{baseStr}{normalizedParam}'
 
     def priceRange(self, param: list[int]) -> list[str]:
-        if len(param) == 0:
+        if len(param) < 2:
             return []
         baseStr: str = 'mp%22%3A%7B%22'
         minStr: str = f'min%22%3A{max(100, param[0])}'
