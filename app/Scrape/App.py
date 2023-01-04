@@ -69,7 +69,7 @@ class App:
             parsingModel=zillowParsingModel, 
             dbInterface = self.dbInterface, 
             requestHub=self.requestHub,
-            scrapeWithProxy=False,
+            scrapeWithProxy=True,
             scrapeHeadlessly=False
         )
 
@@ -84,8 +84,8 @@ class App:
             parsingModel=apartmentsParsingModel, 
             dbInterface = self.dbInterface, 
             requestHub=self.requestHub,
-            scrapeWithProxy=True,
-            scrapeHeadlessly=False
+            scrapeWithProxy=False,
+            scrapeHeadlessly=True
         )
 
         return [apartmentsScraper, zillowScraper, fbmScraper, rentScraper]

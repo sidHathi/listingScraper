@@ -45,9 +45,9 @@ class RequestHub:
                 self.proxyAvailable = False
 
     def tryRequest(self, url: str, elemOnSuccess: TagModel, proxy: bool = False, headless: bool = False) -> str | None:
-        userAgent: str = self.user_agent_rotator.get_random_user_agent()
-
         for _ in range(maxRetires):
+            userAgent: str = self.user_agent_rotator.get_random_user_agent()
+
             try:
                 opts = Options()
                 opts.add_argument(f'user-agent={userAgent}')
