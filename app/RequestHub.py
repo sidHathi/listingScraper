@@ -61,10 +61,9 @@ class RequestHub:
                 opts.add_argument('--ignore-certificate-errors')
                 opts.add_argument('--disable-blink-features=AutomationControlled')
                 opts.add_argument("--disable-infobars")
-                opts.add_argument('--no-sandbox')
-                opts.add_argument('–disable-setuid-sandbox')
                 
                 if headless:
+                    opts.add_argument('--no-sandbox')
                     opts.add_argument('--headless')
 
                 if proxy:
