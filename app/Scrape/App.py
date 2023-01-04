@@ -84,7 +84,7 @@ class App:
             parsingModel=apartmentsParsingModel, 
             dbInterface = self.dbInterface, 
             requestHub=self.requestHub,
-            scrapeWithProxy=True,
+            scrapeWithProxy=False,
             scrapeHeadlessly=False
         )
 
