@@ -58,9 +58,9 @@ class RequestHub:
         opts.add_argument('--ignore-certificate-errors')
         opts.add_argument('--disable-blink-features=AutomationControlled')
         opts.add_argument("--disable-infobars")
+        opts.add_argument('--no-sandbox')
         
         if headless:
-            opts.add_argument('--no-sandbox')
             opts.add_argument('--headless')
 
         if proxy:
@@ -91,6 +91,7 @@ class RequestHub:
             html: str = browser.page_source
             browser.close()
             return html
+        return None
 
     def executeRequest(self, url: str, elemOnSuccess: TagModel, proxy: bool, headless: bool = False) -> str | None:
         '''
