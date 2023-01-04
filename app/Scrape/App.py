@@ -70,7 +70,7 @@ class App:
             dbInterface = self.dbInterface, 
             requestHub=self.requestHub,
             scrapeWithProxy=False,
-            scrapeHeadlessly=True
+            scrapeHeadlessly=False
         )
 
         apartmentsUrlService: UrlService = ApartmentsUrlService()
