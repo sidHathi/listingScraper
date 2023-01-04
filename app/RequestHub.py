@@ -85,6 +85,10 @@ class RequestHub:
                 print(e)
                 sleep(6)
                 return None
+            except Exception as e:
+                print(e)
+                sleep(6)
+                return None
 
             print('successful scrape')
             # browser.maximize_window()
