@@ -65,13 +65,12 @@ class RequestHub:
             opts.add_argument('--headless')
 
         for _ in range(maxRetires):
-            if proxy:
-                opts.add_argument(f'--proxy-server={proxyUrl}')
-                browser = ucChrome(options=opts, desired_capabilities=smartproxy())
-            else:
-                browser = ucChrome(options=opts)
-                
             try:
+                if proxy:
+                    opts.add_argument(f'--proxy-server={proxyUrl}')
+                    browser = ucChrome(options=opts, desired_capabilities=smartproxy())
+                else:
+                    browser = ucChrome(options=opts)
                 browser.get(url)
                 print(elemOnSuccess.getCssSelector())
                 WebDriverWait(browser, requestTimeout).until(
