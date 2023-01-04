@@ -85,7 +85,7 @@ class App:
             dbInterface = self.dbInterface, 
             requestHub=self.requestHub,
             scrapeWithProxy=False,
-            scrapeHeadlessly=True
+            scrapeHeadlessly=False
         )
 
         return [apartmentsScraper, zillowScraper, fbmScraper, rentScraper]
