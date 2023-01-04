@@ -66,7 +66,7 @@ class RequestHub:
                 
                 if headless:
                     opts.add_argument('--headless')
-                    
+
                 if proxy:
                     opts.add_argument(f'--proxy-server={proxyUrl}')
                     browser = ucChrome(options=opts, desired_capabilities=smartproxy())
@@ -85,7 +85,7 @@ class RequestHub:
             except WebDriverException as e:
                 print(e)
                 sleep(6)
-                continue
+                return None
 
             print('successful scrape')
             # browser.maximize_window()
