@@ -69,8 +69,8 @@ class App:
             parsingModel=zillowParsingModel, 
             dbInterface = self.dbInterface, 
             requestHub=self.requestHub,
-            scrapeWithProxy=True,
-            scrapeHeadlessly=False
+            scrapeWithProxy=False,
+            scrapeHeadlessly=True
         )
 
         apartmentsUrlService: UrlService = ApartmentsUrlService()
