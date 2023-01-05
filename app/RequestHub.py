@@ -20,7 +20,7 @@ from .selenium_python import smartproxy
 from .models.TagModel import TagModel
 
 
-proxyUrl: str = 'http://geo.iproyal.com:12321'
+proxyUrl: str = 'geo.iproyal.com:12321'
 maxRetires: int = 3
 requestTimeout: int = 10
 config = dotenv_values('.env')
