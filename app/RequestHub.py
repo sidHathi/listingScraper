@@ -73,8 +73,9 @@ class RequestHub:
                     opts.add_argument('--headless')
 
                 if proxy:
-                    opts.add_argument(f'--proxy-server={proxyUrl}')
-                    browser = webdriver.Chrome(service=Service(ChromeDriverManager().install()), chrome_options=opts)
+                    # opts.add_argument(f'--proxy-server={proxyUrl}')
+                    # opts.add_argument(f'Connection=close')
+                    browser = webdriver.Chrome(service=Service(ChromeDriverManager().install()), chrome_options=opts, desired_capabilities=smartproxy())
                 else:
                     browser = webdriver.Chrome(service=Service(ChromeDriverManager().install()), chrome_options=opts)
                 browser.get(url)
