@@ -1,11 +1,13 @@
 from selenium import webdriver
 from selenium.common.exceptions import TimeoutException, WebDriverException
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.proxy import Proxy, ProxyType
 from undetected_chromedriver import Chrome as ucChrome
+from webdriver_manager.chrome import ChromeDriverManager
 
 from random_user_agent.user_agent import UserAgent
 from random_user_agent.params import SoftwareName, OperatingSystem
@@ -72,9 +74,9 @@ class RequestHub:
 
                 if proxy:
                     opts.add_argument(f'--proxy-server={proxyUrl}')
-                    browser = ucChrome(options=opts, desired_capabilities=smartproxy())
+                    browser = ucChrome(service=Service(ChromeDriverManager().install()), options=opts, desired_capabilities=smartproxy())
                 else:
-                    browser = ucChrome(options=opts)
+                    browser = ucChrome(service=Service(ChromeDriverManager().install()), options=opts)
                 browser.get(url)
                 print(elemOnSuccess.getCssSelector())
                 WebDriverWait(browser, requestTimeout).until(
