@@ -81,9 +81,9 @@ class RequestHub:
 
                     capabilities = webdriver.DesiredCapabilities.CHROME
                     proxyCap.add_to_capabilities(capabilities)
-                    # opts.add_argument(f'--proxy-server={proxyUrl}')
+                    opts.add_argument(f'--proxy-server={proxyUrl}')
                     # opts.add_argument(f'Connection=close')
-                    browser = webdriver.Chrome(service=Service(ChromeDriverManager().install()), chrome_options=opts, desired_capabilities=capabilities)
+                    browser = webdriver.Chrome(service=Service(ChromeDriverManager().install()), chrome_options=opts)
                 else:
                     browser = webdriver.Chrome(service=Service(ChromeDriverManager().install()), chrome_options=opts)
                 browser.get(url)
