@@ -59,7 +59,7 @@ class RequestHub:
                 opts.add_argument('dnt=1')
                 opts.add_argument('upgrade-insecure-requests=1')
                 opts.add_argument('--single-process')
-                # opts.add_argument('--disable-dev-shm-usage')
+                opts.add_argument('--disable-dev-shm-usage')
                 opts.add_argument('--ignore-certificate-errors')
                 opts.add_argument('--disable-blink-features=AutomationControlled')
                 opts.add_argument("--disable-infobars")
@@ -74,9 +74,9 @@ class RequestHub:
 
                 if proxy:
                     opts.add_argument(f'--proxy-server={proxyUrl}')
-                    browser = ucChrome(service=Service(ChromeDriverManager().install()), options=opts, desired_capabilities=smartproxy())
+                    browser = webdriver.Chrome(service=Service(ChromeDriverManager().install()), chrome_options=opts, desired_capabilities=smartproxy())
                 else:
-                    browser = ucChrome(service=Service(ChromeDriverManager().install()), options=opts)
+                    browser = ucChrome(service=Service(ChromeDriverManager().install()), chrome_options=opts)
                 browser.get(url)
                 print(elemOnSuccess.getCssSelector())
                 WebDriverWait(browser, requestTimeout).until(
