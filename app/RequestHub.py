@@ -53,6 +53,7 @@ class RequestHub:
             try:
                 opts = Options()
                 opts.add_argument(f'user-agent={userAgent}')
+                opts.add_argument(f'Connection=close')
                 opts.add_argument('accept=text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng')
                 opts.add_argument('accept-encoding=gzip,deflate,br')
                 opts.add_argument('accept-language=en-US,en;q=0.8')
