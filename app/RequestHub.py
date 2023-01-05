@@ -52,12 +52,12 @@ class RequestHub:
 
             try:
                 opts = Options()
-                # opts.add_argument(f'user-agent={userAgent}')
-                # opts.add_argument('accept=text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng')
-                # opts.add_argument('accept-encoding=gzip,deflate,br')
-                # opts.add_argument('accept-language=en-US,en;q=0.8')
-                # opts.add_argument('dnt=1')
-                # opts.add_argument('upgrade-insecure-requests=1')
+                opts.add_argument(f'user-agent={userAgent}')
+                opts.add_argument('accept=text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng')
+                opts.add_argument('accept-encoding=gzip,deflate,br')
+                opts.add_argument('accept-language=en-US,en;q=0.8')
+                opts.add_argument('dnt=1')
+                opts.add_argument('upgrade-insecure-requests=1')
                 # opts.add_argument('--single-process')
                 # opts.add_argument('--disable-dev-shm-usage')
                 # opts.add_argument('--ignore-certificate-errors')
