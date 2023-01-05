@@ -3,8 +3,8 @@ from dotenv import dotenv_values
 config = dotenv_values('.env')
 assert(config['CHROME_PATH'] is not None)
 
-HOSTNAME = '69.30.199.122'
-PORT = '19004'
+HOSTNAME = 'geo.iproyal.com'
+PORT = '12321'
 ### DRIVER
 """
 Define the driver as follows:

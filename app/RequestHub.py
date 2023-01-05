@@ -20,7 +20,7 @@ from .selenium_python import smartproxy
 from .models.TagModel import TagModel
 
 
-proxyUrl: str = '69.30.199.122:19014'
+proxyUrl: str = 'geo.iproyal.com:12321'
 maxRetires: int = 3
 requestTimeout: int = 10
 config = dotenv_values('.env')
@@ -53,7 +53,6 @@ class RequestHub:
             try:
                 opts = Options()
                 opts.add_argument(f'user-agent={userAgent}')
-                opts.add_argument(f'Connection=close')
                 opts.add_argument('accept=text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng')
                 opts.add_argument('accept-encoding=gzip,deflate,br')
                 opts.add_argument('accept-language=en-US,en;q=0.8')
@@ -75,6 +74,7 @@ class RequestHub:
 
                 if proxy:
                     opts.add_argument(f'--proxy-server={proxyUrl}')
+                    opts.add_argument(f'Connection=close')
                     browser = ucChrome(service=Service(ChromeDriverManager().install()), chrome_options=opts, desired_capabilities=smartproxy())
                 else:
                     browser = ucChrome(service=Service(ChromeDriverManager().install()), chrome_options=opts)
