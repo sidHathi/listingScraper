@@ -74,7 +74,7 @@ class RequestHub:
 
                 if proxy:
                     opts.add_argument(f'--proxy-server={proxyUrl}')
-                    browser = ucChrome(service=Service(ChromeDriverManager().install()), chrome_options=opts, desired_capabilities=smartproxy())
+                    browser = ucChrome(service=Service(ChromeDriverManager().install()), chrome_options=opts)
                 else:
                     browser = ucChrome(service=Service(ChromeDriverManager().install()), chrome_options=opts)
                 browser.get(url)
