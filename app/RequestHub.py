@@ -59,7 +59,7 @@ class RequestHub:
                 opts.add_argument('dnt=1')
                 opts.add_argument('upgrade-insecure-requests=1')
                 opts.add_argument('--single-process')
-                opts.add_argument('--disable-dev-shm-usage')
+                # opts.add_argument('--disable-dev-shm-usage')
                 opts.add_argument('--ignore-certificate-errors')
                 opts.add_argument('--disable-blink-features=AutomationControlled')
                 opts.add_argument("--disable-infobars")
