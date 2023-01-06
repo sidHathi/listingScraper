@@ -101,7 +101,7 @@ class App:
             parsingModel=airbnbParsingModel, 
             dbInterface = self.dbInterface, 
             requestHub=self.requestHub,
-            scrapeWithProxy=False,
+            scrapeWithProxy=True,
             scrapeHeadlessly=False
         )
 
