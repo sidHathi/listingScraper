@@ -25,12 +25,7 @@ class ApartmentsListingService(ListingService):
         return super().parseBedroomOptions(opts, queryVal)
     
     def parsePrice(self, price: str, queryVal: Any | None = None) -> int:
-        range = price.split(' - ')
-        lowerBound = range[0]
-        numeric = re.sub(r'[^0-9]', '', lowerBound)
-        if len(numeric) == 0:
-            return -1
-        return int(numeric)
+        return super().parsePrice(price)
     
     def parseShortestLease(self, lease: str, queryVal: Any | None = None) -> int:
         shortestLease: int | None = extractShortestLeaseFromDescription(lease)
@@ -59,13 +54,13 @@ class ApartmentsListingService(ListingService):
             ListingField.REType: None, # use query val
             ListingField.REType: None, # use query val
             ListingField.Bedrooms: [
-                TagModel(tagType='div', identifiers={
-                    'class': 'rentInfoDetail'
+                TagModel(tagType='ul', identifiers={
+                    'class': 'priceBedRangeInfo'
                 })
             ],
             ListingField.Price: [
-                TagModel(tagType='p', identifiers={
-                    'class': 'rentInfoDetail'
+                TagModel(tagType='ul', identifiers={
+                    'class': 'priceBedRangeInfo'
                 })
             ],
             ListingField.ShortestLease: [

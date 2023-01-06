@@ -6,7 +6,7 @@ from ..models.Query import Query
 from ..interfaces.UrlService import UrlService
 from ..interfaces.ListingService import ListingService
 from ..models.ParsingModel import ParsingModel
-from ..constants import rentSearchingTag, fbmSearchingTag, zillowSearchingTag, apartmentsSearchingTag
+from ..constants import rentSearchingTag, fbmSearchingTag, zillowSearchingTag, apartmentsSearchingTag, airbnbSearchingTag
 
 from ..FBM.FBMListingService import FBMListingService
 from ..FBM.FBMUrlService import FBMUrlService
@@ -16,6 +16,8 @@ from ..Zillow.ZillowListingService import ZillowListingService
 from ..Zillow.ZillowUrlService import ZillowUrlService
 from ..Apartments.ApartmentsListingService import ApartmentsListingService
 from ..Apartments.ApartmentsUrlService import ApartmentsUrlService
+from ..Airbnb.AirbnbListingService import AirbnbListingService
+from ..Airbnb.AirbnbUrlService import AirbnbUrlService
 
 class App:
     def __init__(self, dbInterface: DBInterface, requestHub: RequestHub):
@@ -88,7 +90,22 @@ class App:
             scrapeHeadlessly=False
         )
 
-        return [zillowScraper, fbmScraper]
+        airbnbUrlService: UrlService = AirbnbUrlService()
+        airbnbListingService: ListingService = AirbnbListingService()
+        airbnbParsingModel = ParsingModel(targetTag=airbnbSearchingTag, requiresTagMap=False, listingService=airbnbListingService)
+        airbnbScraper: Scraper = Scraper(
+            urlString ='https://www.airbnb.com', 
+            urlService=airbnbUrlService, 
+            listingService=airbnbListingService,
+            paginationModel=None, 
+            parsingModel=airbnbParsingModel, 
+            dbInterface = self.dbInterface, 
+            requestHub=self.requestHub,
+            scrapeWithProxy=False,
+            scrapeHeadlessly=False
+        )
+
+        return [airbnbScraper, zillowScraper, fbmScraper, apartmentsScraper, rentScraper]
 
     async def run(self):
         queries: list[Query] = self.getQueries()
