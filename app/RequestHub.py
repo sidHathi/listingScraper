@@ -84,7 +84,7 @@ class RequestHub:
                     opts.add_argument(f'--proxy-server={proxyUrl}')
                     # opts.add_argument(f'Connection=close')
                     browser = webdriver.Chrome(service=Service(ChromeDriverManager().install()), chrome_options=opts, desired_capabilities=smartproxy())
-                    sleep(2);
+                    # sleep(2);
                 else:
                     browser = webdriver.Chrome(service=Service(ChromeDriverManager().install()), chrome_options=opts)
                 browser.get(url)
