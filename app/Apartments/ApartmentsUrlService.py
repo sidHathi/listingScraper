@@ -24,7 +24,7 @@ class ApartmentsUrlService(UrlService):
         cityStr, stateStr = (re.sub(' ', '-', city.lower()), re.sub(' ', '-', state.lower()))
         return [f'{cityStr}-{stateStr}']
     
-    def reType(self, param: REType) -> str:
+    def reType(self, param: REType) -> str | None:
         match(param):
             case REType.Apartment:
                 return 'apartments'

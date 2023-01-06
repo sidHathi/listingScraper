@@ -54,24 +54,10 @@ class ZillowListingService(ListingService):
         return [int(lower), int(upper)]
 
     def parsePrice(self, price: str, queryVal: Any | None = None) -> int:
-        numeric = re.sub(r'[^0-9]', '', price)
-        if len(numeric) == 0:
-            return -1
-        return int(numeric)
+        return super().parsePrice(price, queryVal)
 
     def parseShortestLease(self, lease: str, queryVal: Any | None = None) -> int:
-        listMatches = findIntegerListMonths(lease)
-        if listMatches is not None and len(listMatches) > 0:
-            return min(listMatches)
-        elif queryVal is not None:
-            return int(queryVal)
-        elif len(matchLeaseTermByKeyword(lease, keywordMap)) > 0:
-            val: int | None = termToMonthMap[matchLeaseTermByKeyword(lease, keywordMap)[0]]
-            if val is not None:
-                return val
-        default = termToMonthMap[LeaseTerm.LongTerm]
-        assert(default is not None)
-        return default
+        return super().parseShortestLease(lease, queryVal)
 
     def getFieldMaps(self) -> dict[ListingField, list[TagModel] | None]:
         return {

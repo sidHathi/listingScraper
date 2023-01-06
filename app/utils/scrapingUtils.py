@@ -40,6 +40,7 @@ def parseGMV3Location(location: Location, shortened: bool = False) -> list[str] 
     
     city = ""
     state = ""
+    country = ""
     addr_components: list[dict[str, Any]] = locMap['address_components']
     for comp in addr_components:
         if comp['types'][0] == 'locality' and 'long_name' in comp:
@@ -49,6 +50,8 @@ def parseGMV3Location(location: Location, shortened: bool = False) -> list[str] 
                 state = comp['short_name']
             elif 'long_name' in comp:
                 state = comp['long_name']
+        if comp['types'][0] == 'country' and 'short_name' in comp:
+            country = comp['short_name']
     return [city, state]
 
 def parseNominatimLocation(location: Location) -> list[str] | None:
@@ -57,6 +60,8 @@ def parseNominatimLocation(location: Location) -> list[str] | None:
     addr: dict[str, Any] = location.raw['address']
     if 'city' not in addr or 'state' not in addr:
         return None
+    if 'country' not in addr:
+        return [addr['city'], addr['state']]
     return [addr['city'], addr['state']]
             
 async def htmlPull(url: str, browser: webdriver.Chrome, timeout: int) -> str | None:

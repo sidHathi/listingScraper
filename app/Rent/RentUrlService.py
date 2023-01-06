@@ -23,7 +23,7 @@ class RentUrlService(UrlService):
             return []
         return [re.sub(' ', '-', state.lower()), re.sub(' ', '-', city.lower())]
     
-    def reType(self, param: REType) -> str:
+    def reType(self, param: REType) -> str | None:
         match(param):
             case REType.Apartment:
                 return 'apartments'

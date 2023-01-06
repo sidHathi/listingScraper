@@ -17,14 +17,10 @@ class RentListingService(ListingService):
         return TagModel(tagType='h1', identifiers={'data-tid':'property-title'})
 
     def parseName(self, nameStr: str) -> str:
-        return nameStr
+        return super().parseName(nameStr)
 
     def parseLocation(self, locStr: str, queryVal: Any | None = None) -> Location:
-        location: Location | None = encodeLocation(locStr)
-        if location is None:
-            assert queryVal is not None
-            return queryVal
-        return location
+        return super().parseLocation(locStr, queryVal)
 
     def parseBedroomOptions(self, opts: str, queryVal: Any | None = None) -> list[int]:
         '''
@@ -49,18 +45,7 @@ class RentListingService(ListingService):
         return int(numeric)
 
     def parseShortestLease(self, lease: str, queryVal: Any | None = None) -> int:
-        listMatches = findIntegerListMonths(lease)
-        if listMatches is not None and len(listMatches) > 0:
-            return min(listMatches)
-        elif queryVal is not None:
-            return int(queryVal)
-        elif len(matchLeaseTermByKeyword(lease, keywordMap)) > 0:
-            val: int | None = termToMonthMap[matchLeaseTermByKeyword(lease, keywordMap)[0]]
-            if val is not None:
-                return val
-        default = termToMonthMap[LeaseTerm.LongTerm]
-        assert(default is not None)
-        return default
+        return super().parseShortestLease(lease, queryVal)
 
     def getFieldMaps(self) -> dict[ListingField, list[TagModel] | None]:
         return {

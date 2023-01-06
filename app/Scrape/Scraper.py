@@ -55,7 +55,7 @@ class Scraper:
         if url is None:
             return
         
-        baseHtml = self.requestHub.executeRequest(url, self.parsingModel.targetTag, self.scrapeWithProxy)
+        baseHtml = self.requestHub.executeRequest(url, self.parsingModel.targetTag, self.scrapeWithProxy, self.scrapeHeadlessly)
         if baseHtml is None:
             self.searchHtmlPages = []
             return

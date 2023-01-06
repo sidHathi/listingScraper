@@ -28,7 +28,7 @@ class UrlService(ABC):
         ...
 
     @abstractmethod
-    def reType(self, param: REType) -> str:
+    def reType(self, param: REType) -> str | None:
         """Get the real estate type string for the url"""
         ...
 

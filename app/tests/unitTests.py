@@ -9,13 +9,15 @@ from ..models.Query import Query
 from ..interfaces.UrlService import UrlService
 from ..Zillow.ZillowUrlService import ZillowUrlService
 from ..Apartments.ApartmentsUrlService import ApartmentsUrlService
+from ..Airbnb.AirbnbUrlService import AirbnbUrlService
+from ..Airbnb.AirbnbListingService import AirbnbListingService
 from ..enums import REType, LeaseTerm
 from ..utils.scrapingUtils import followTagMap, findIntegerListMonths, findIntegerMonths
 from ..constants import usStateToAbbrev
 from ..interfaces.UrlService import UrlService
 from ..interfaces.ListingService import ListingService
 from ..models.ParsingModel import ParsingModel
-from ..constants import rentSearchingTag, fbmSearchingTag, zillowSearchingTag
+from ..constants import rentSearchingTag, fbmSearchingTag, zillowSearchingTag, airbnbSearchingTag
 from ..Scrape.Scraper import Scraper
 from ..DBInterface import DBInterface
 from ..RequestHub import RequestHub
@@ -218,5 +220,76 @@ def testApartmentsUrl1() -> bool:
         print('url construct failed')
         return False
     print(url)
+    return True
+
+def testAirbnbUrl1() -> bool:
+    testLocationStr = 'Boston, MA'
+    geocoder = GoogleV3(api_key=config['GOOGLE_MAPS_API_KEY'])
+    geocode = RateLimiter(geocoder.geocode, min_delay_seconds=1, return_value_on_exception=None)
+    encoded = geocode(testLocationStr)
+    if encoded is None:
+        print('location encode failed')
+        return False
+    
+    testQuery: Query = Query(
+        name='unitTestQuery',
+        location=encoded,
+        reType=REType.Apartment,
+        bedrooms=1,
+        priceRange=[0, 4000],
+        leaseTerm=LeaseTerm.ShortTerm,
+        leaseDuration=6,
+        pets=True,
+        transit=False
+    )
+    
+    urlService: UrlService = AirbnbUrlService()
+    url: str | None = urlService.construct(testQuery)
+    if url is None:
+        print('url construct failed')
+        return False
+    print(url)
+    return True
+
+def testAirbnbScrape() -> bool:
+    testLocationStr = 'San Francisco, CA'
+    geocoder = GoogleV3(api_key=config['GOOGLE_MAPS_API_KEY'])
+    geocode = RateLimiter(geocoder.geocode, min_delay_seconds=1, return_value_on_exception=None)
+    encoded = geocode(testLocationStr)
+    if encoded is None:
+        print('location encode failed')
+        return False
+
+    testQuery: Query = Query(
+        name='unitTestQuery',
+        location=encoded,
+        reType=REType.Apartment,
+        bedrooms=1,
+        priceRange=[500, 4000],
+        leaseTerm=LeaseTerm.ShortTerm,
+        leaseDuration=None,
+        pets=False,
+        transit=False)
+    
+    dbInterface: DBInterface = DBInterface()
+    requestHub: RequestHub = RequestHub()
+
+    airbnbUrlService: UrlService = AirbnbUrlService()
+    airbnbListingService: ListingService = AirbnbListingService()
+    airbnbParsingModel = ParsingModel(targetTag=airbnbSearchingTag, requiresTagMap=False, listingService=airbnbListingService)
+    airbnbScraper: Scraper = Scraper(
+        urlString ='https://www.airbnb.com', 
+        urlService=airbnbUrlService, 
+        listingService=airbnbListingService,
+        paginationModel=None, 
+        parsingModel=airbnbParsingModel, 
+        dbInterface = dbInterface, 
+        requestHub=requestHub,
+        scrapeWithProxy=False,
+        scrapeHeadlessly=False
+    )
+
+    airbnbScraper.executeQuery(testQuery)
+
     return True
 

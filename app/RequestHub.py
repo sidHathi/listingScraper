@@ -66,7 +66,7 @@ class RequestHub:
                 opts.add_argument("--disable-extensions")
                 opts.add_argument('--disable-application-cache')
                 # opts.add_argument('--disable-gpu')
-                # opts.add_argument("--no-sandbox")
+                opts.add_argument("--no-sandbox")
                 # opts.add_argument("--disable-setuid-sandbox")
                 
                 if headless:
@@ -83,7 +83,7 @@ class RequestHub:
                     proxyCap.add_to_capabilities(capabilities)
                     opts.add_argument(f'--proxy-server={proxyUrl}')
                     # opts.add_argument(f'Connection=close')
-                    browser = webdriver.Chrome(service=Service(ChromeDriverManager().install()), chrome_options=opts, desired_capabilities=smartproxy())
+                    browser = ucChrome(service=Service(ChromeDriverManager().install()), options=opts, desired_capabilities=smartproxy())
                     sleep(2);
                 else:
                     browser = webdriver.Chrome(service=Service(ChromeDriverManager().install()), chrome_options=opts)
@@ -130,6 +130,7 @@ class RequestHub:
         '''
         useProxy: bool = self.proxyAvailable and proxy
         res: str | None = self.tryRequest(url, elemOnSuccess, useProxy, headless)
+        if useProxy: print('Using proxy')
         if res is not None and useProxy:
             print("valid result with proxy")
             return res

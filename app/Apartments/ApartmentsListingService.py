@@ -16,30 +16,13 @@ class ApartmentsListingService(ListingService):
         return TagModel(tagType='h1', identifiers={'id':'propertyName'})
     
     def parseName(self, nameStr: str) -> str:
-        return nameStr
+        return super().parseName(nameStr)
     
     def parseLocation(self, locStr: str, queryVal: Any | None = None) -> Location:
-        location: Location | None = encodeLocation(locStr)
-        if location is None:
-            assert queryVal is not None
-            return queryVal
-        return location
+        return super().parseLocation(locStr, queryVal)
     
     def parseBedroomOptions(self, opts: str, queryVal: Any | None = None) -> list[int]:
-        '''
-        format {range/number bd OR Studio}
-        '''
-        splitOpts = opts.split(' ')
-        if len(splitOpts) < 2:
-            return [0, 0] # must be 'Studio'
-        
-        valStr: str = ''.join(splitOpts[:-1])
-        splitVal = re.split(r'[-–]', valStr)
-        lower = re.sub(r'(studio)', '0', splitVal[0], flags=re.IGNORECASE)
-        if len(splitVal) == 1:
-            return [int(lower), int(lower)]
-        upper = re.sub(r'(studio)', '0', splitVal[1], flags=re.IGNORECASE)
-        return [int(lower), int(upper)]
+        return super().parseBedroomOptions(opts, queryVal)
     
     def parsePrice(self, price: str, queryVal: Any | None = None) -> int:
         range = price.split(' - ')

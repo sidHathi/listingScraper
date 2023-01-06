@@ -34,7 +34,7 @@ class FBMUrlService(UrlService):
             cityStr = shortenedLocations[cityStr]
         return [cityStr]
 
-    def reType(self, param: REType) -> str:
+    def reType(self, param: REType) -> str | None:
         match(param):
             case REType.Apartment:
                 return 'apartments'

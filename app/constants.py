@@ -82,6 +82,10 @@ apartmentsSearchingTag: TagModel = TagModel(identifiers={
     'class': 'property-link',
 })
 
+airbnbSearchingTag: TagModel = TagModel(identifiers={
+    'rel': 'noopener noreferrer nofollow',
+})
+
 fieldDefaults: dict[ListingField, Any] = {
     ListingField.Url: 'unavailable',
     ListingField.Name: 'unavailable',

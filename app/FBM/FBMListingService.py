@@ -28,43 +28,13 @@ class FBMListingService(ListingService):
             assert queryVal is not None
             return queryVal
 
-        location: Location | None = encodeLocation(addr)
-        if location is None:
-            assert queryVal is not None
-            return queryVal
-        return location
+        return super().parseLocation(locStr=addr, queryVal=queryVal)
 
     def parseBedroomOptions(self, opts: str, queryVal: Any | None = None) -> list[int]:
-        '''
-        format {range Bed/Beds OR Studio}
-        '''
-        print(opts)
-        studioMatches: list[str] = re.findall(r'(studio)', opts, re.IGNORECASE)
-        if len(studioMatches) > 0:
-            return [0, 0] # must be 'Studio'
-        
-        bedsRegexMatch = re.search(r'([\d\s]+(beds|bed))', opts, re.I)
-        if bedsRegexMatch is None:
-            return [0, 0]
-        bedsStr: str = re.sub(r'[^0-9-–]', '', bedsRegexMatch.group())
-        if len(bedsStr) < 1:
-            assert(queryVal is not None)
-            return [int(queryVal), int(queryVal)]
-        splitVal = re.split(r'[-–]', bedsStr)
-        lower = splitVal[0]
-        if len(splitVal) == 1:
-            return [int(lower), int(lower)]
-        upper = splitVal[1]
-        return [int(lower), int(upper)]
+        return super().parseBedroomOptions(opts, queryVal)
 
     def parsePrice(self, price: str, queryVal: Any | None = None) -> int:
-        print("[PRICE]: " +price);
-        numeric = findPrice(price)
-        print(numeric)
-        if numeric is None or numeric == '':
-            return -1
-
-        return int(numeric)
+        return super().parsePrice(price, queryVal)
 
     def parseShortestLease(self, lease: str, queryVal: Any | None = None) -> int:
         listMatches = findIntegerListMonths(lease)
