@@ -129,8 +129,9 @@ class RequestHub:
         3. Return the first successful result of None
         '''
         useProxy: bool = self.proxyAvailable and proxy
+        if useProxy:
+            print('Using proxy')
         res: str | None = self.tryRequest(url, elemOnSuccess, useProxy, headless)
-        if useProxy: print('Using proxy')
         if res is not None and useProxy:
             print("valid result with proxy")
             return res
