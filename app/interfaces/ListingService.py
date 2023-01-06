@@ -37,7 +37,7 @@ class ListingService(ABC):
         if len(studioMatches) > 0:
             return [0, 0] # must be 'Studio'
         
-        bedsRegexMatch = re.search(r'([\d\s-–]+(beds|bed))', opts, re.I)
+        bedsRegexMatch = re.search(r'([-–\d\s]+(beds|bed))', opts, re.I)
         if bedsRegexMatch is None:
             return [0, 0]
         bedsStr: str = re.sub(r'[^0-9-–]', '', bedsRegexMatch.group())
