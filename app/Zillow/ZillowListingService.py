@@ -28,7 +28,7 @@ class ZillowListingService(ListingService):
         locDict = self.geocodedLocation.raw
         assert 'address_components' in locDict and len(locDict['address_components']) > 0 and 'short_name' in locDict['address_components'][0]
         shortLocName = locDict['address_components'][0]['short_name']
-        return f'Zillow {shortLocName}'
+        return f'Zillow Rental #{shortLocName}'
 
     def parseLocation(self, locStr: str, queryVal: Any | None = None) -> Location:
         location: Location | None = self.geocodedLocation or encodeLocation(locStr)

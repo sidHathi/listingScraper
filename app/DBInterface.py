@@ -55,4 +55,7 @@ class DBInterface:
 
     def getQueries(self) -> list[dict[str, Any]]:
         return list(self.queriesCol.find())
+    
+    def getCompleteListingDicts(self) -> list[dict[str, Any]]:
+        return list(self.listingsCol.find())
 
