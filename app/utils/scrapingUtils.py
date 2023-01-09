@@ -43,14 +43,16 @@ def parseGMV3Location(location: Location, shortened: bool = False) -> list[str] 
     country = ""
     addr_components: list[dict[str, Any]] = locMap['address_components']
     for comp in addr_components:
-        if comp['types'][0] == 'locality' and 'long_name' in comp:
+        if 'locality' in comp['types']  and 'long_name' in comp:
             city = comp['long_name']
-        if comp['types'][0] == 'administrative_area_level_1':
+        elif 'sublocality' in comp['types'] and 'long_name' in comp:
+            city = comp['long_name']
+        if 'administrative_area_level_1' in comp['types'][0]:
             if shortened and 'short_name' in comp:
                 state = comp['short_name']
             elif 'long_name' in comp:
                 state = comp['long_name']
-        if comp['types'][0] == 'country' and 'short_name' in comp:
+        if 'country' in comp['types'] and 'short_name' in comp:
             country = comp['short_name']
     return [city, state]
 

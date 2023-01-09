@@ -21,12 +21,14 @@ class FBMUrlService(UrlService):
     def location(self, queryLocation: Location) -> list[str]:
         city, _ = parseNominatimLocation(queryLocation) or parseGMV3Location(queryLocation) or [None, None]
 
-        if city is not None:
+        if city is not None and city:
             cityStr = city.lower()
             if cityStr in shortenedLocations:
                 cityStr = shortenedLocations[cityStr]
-            return [cityStr]
+            if city in validLocations:
+                return [cityStr]
         closestCityLoc = quadTree.getNearestLoc(queryLocation, searchResultsMaxDist)
+        print(closestCityLoc)
         if closestCityLoc is None:
             return []
         cityStr = closestCityLoc.raw['address']['city'].lower()

@@ -21,6 +21,7 @@ class AirbnbUrlService(UrlService):
     
     def location(self, queryLocation: Location) -> list[str]:
         city, state = parseNominatimLocation(queryLocation) or parseGMV3Location(location=queryLocation, shortened=True) or [None, None]
+        print([city, state])
         if city is None or state is None:
             return []
         cityStr, stateStr = (re.sub(' ', '-', city.capitalize()), re.sub(' ', '-', state.capitalize()))
@@ -75,7 +76,7 @@ class AirbnbUrlService(UrlService):
         return {
             UrlFieldType.Prefix : None,
             UrlFieldType.PathPrefixes: [
-                '/s',
+                's',
                 *self.location(query.location),
                 'homes'
             ],

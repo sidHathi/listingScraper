@@ -57,7 +57,8 @@ locationStates = {
 
 shortenedLocations: dict[str, str] = {
     'los angeles': 'la',
-    'washington dc': 'dc'
+    'washington': 'dc',
+    'city of new york': 'nyc'
 }
 
 fbGeolocator = Nominatim(user_agent='housing_scraper')

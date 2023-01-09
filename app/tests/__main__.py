@@ -1,4 +1,4 @@
-from .unitTests import testZillowUrl1, testZillowUrl2, testZillowUrl3, testZillowScrape, testApartmentsUrl1, testAirbnbUrl1, testAirbnbScrape
+from .unitTests import testZillowUrl1, testZillowUrl2, testZillowUrl3, testZillowScrape, testApartmentsUrl1, testAirbnbUrl1, testAirbnbScrape, testNYCQuery, testUrlBuilders
 
 if __name__ == '__main__':
     print(testZillowUrl1())
@@ -6,5 +6,7 @@ if __name__ == '__main__':
     print(testZillowUrl3())
     print(testApartmentsUrl1())
     print(testAirbnbUrl1())
-    print(testAirbnbScrape())
+    # print(testAirbnbScrape())
     # print(testZillowScrape())
+    # print(testNYCQuery())
+    print(testUrlBuilders())
