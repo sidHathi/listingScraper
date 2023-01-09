@@ -16,7 +16,7 @@ from ..constants import maxLocationRetires, termToMonthMap, keywordMap
 config = dotenv_values('.env')
 
 def encodeLocation(addressString: str) -> Location | None:
-    if config['GOOGLE_MAPS_API_KEY'] is None:
+    if not 'GOOGLE_MAPS_API_KEY' in config:
         return None
     for _ in range(maxLocationRetires):
         try:

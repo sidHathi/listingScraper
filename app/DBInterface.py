@@ -56,6 +56,12 @@ class DBInterface:
     def getQueries(self) -> list[dict[str, Any]]:
         return list(self.queriesCol.find())
     
+    def updateQueryField(self, id: str, fieldName: str, newVal: Any):
+        self.queriesCol.update_one({'_id': id}, {'$set': {fieldName: newVal}})
+
+    def removeQueryField(self, fieldName: str):
+        self.queriesCol.update_many({}, {'$unset': {fieldName: ""}})
+    
     def getCompleteListingDicts(self) -> list[dict[str, Any]]:
         return list(self.listingsCol.find())
 

@@ -55,7 +55,7 @@ class Scraper:
         if url is None:
             return
         
-        baseHtml = self.requestHub.executeRequest(url, self.parsingModel.targetTag, self.scrapeWithProxy, self.scrapeHeadlessly)
+        baseHtml = self.requestHub.executeRequest(url, self.parsingModel.targetTag, self.scrapeWithProxy and query.hasProxyPermission, self.scrapeHeadlessly)
         if baseHtml is None:
             self.searchHtmlPages = []
             return
@@ -68,7 +68,7 @@ class Scraper:
         return
 
 
-    def listingsHtmlPull(self, urls: list[str]) -> None:
+    def listingsHtmlPull(self, urls: list[str], queryWithProxy: bool) -> None:
         urlIdPairs: list[dict[str, Any]] = self.dbInterface.getListingUrls()
         def getUrlFromPair(pair: dict[str, Any]):
             return pair['url']
@@ -77,7 +77,7 @@ class Scraper:
         rawPages: list[str | None] = []
         for url in urls:
             if url not in alreadyScraped:
-                rawPages.append(self.requestHub.executeRequest(url, self.parsingModel.listingService.getOnSuccessTag(), self.scrapeWithProxy, self.scrapeHeadlessly))
+                rawPages.append(self.requestHub.executeRequest(url, self.parsingModel.listingService.getOnSuccessTag(), self.scrapeWithProxy and queryWithProxy, self.scrapeHeadlessly))
                 
         def getSoup(page) -> BeautifulSoup:
             soup = BeautifulSoup(page, 'html.parser')
@@ -184,7 +184,7 @@ class Scraper:
 
     def executeQuery(self, query: Query) -> None:
         self.searchHtmlPull(query)
-        self.listingsHtmlPull(self.htmlParse())
+        self.listingsHtmlPull(self.htmlParse(), query.hasProxyPermission)
         listings: list[Listing] = self.listingsScrape(query)
 
         for listing in listings:

@@ -22,7 +22,7 @@ def executeMigration(dbInterface: DBInterface):
                 dbInterface.updateListingField(id, newField, providerName)
                 break
 
-        dbInterface.addMigration(description, migrationIndex, [newField])
+    dbInterface.addMigration(description, migrationIndex, [newField])
 
 def rollBackMigration(dbInterface: DBInterface):
     if not isRollbackPossible(dbInterface, migrationIndex):

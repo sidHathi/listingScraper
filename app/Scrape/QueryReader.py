@@ -46,7 +46,8 @@ class QueryReader:
                 leaseTerm=cast(LeaseTerm, reversedEnumMaps['LeaseTerm'][res['leaseTerm']]),
                 leaseDuration=res['leaseDuration'],
                 pets=res['pets'],
-                transit=res['transit']
+                transit=res['transit'],
+                hasProxyPermission=res['hasProxyPermission']
             ), 
             self.results
         ))
