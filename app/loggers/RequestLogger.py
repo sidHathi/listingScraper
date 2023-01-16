@@ -10,6 +10,13 @@ class RequestLogger:
         self.proxyFailures: int = 0
         self.nonProxyFailures: int = 0
 
+    def initializeWebdriverDict(self, dict: dict[str, dict[str, int]], userAgent: str, url: str):
+        domain: str = urlparse(url).netloc
+        if domain not in dict:
+            dict[domain] = {}
+        if userAgent not in dict[domain]:
+            dict[domain][userAgent] = 0
+
     def addFailureToDict(self, dict: dict[str, dict[str, int]], userAgent: str, url: str, proxyUse: bool):
         domain: str = urlparse(url).netloc
         if domain not in dict:
@@ -31,6 +38,11 @@ class RequestLogger:
 
     def logGenericFailure(self, userAgent: str, url: str, proxyUse: bool):
         self.addFailureToDict(self.genericFailures, userAgent, url, proxyUse)
+
+    def logSuccess(self, userAgent: str, url: str):
+        self.initializeWebdriverDict(self.timeoutFailures, userAgent, url)
+        self.initializeWebdriverDict(self.webDriverFailures, userAgent, url)
+        self.initializeWebdriverDict(self.genericFailures, userAgent, url)
 
     def dumpLogs(self):
         if self.logFile is None:
