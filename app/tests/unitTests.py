@@ -3,6 +3,7 @@ from geopy.geocoders import Nominatim, GoogleV3
 from geopy.location import Location
 from geopy.extra.rate_limiter import RateLimiter
 from dotenv import dotenv_values
+from typing import TextIO
 
 from ..models.TagModel import TagModel
 from ..models.Query import Query
@@ -12,7 +13,14 @@ from ..Zillow.ZillowUrlService import ZillowUrlService
 from ..Apartments.ApartmentsUrlService import ApartmentsUrlService
 from ..Airbnb.AirbnbUrlService import AirbnbUrlService
 from ..Airbnb.AirbnbListingService import AirbnbListingService
+from ..Rent.RentListingService import RentListingService
+from ..constants import rentSearchingTag
+from ..Apartments.ApartmentsListingService import ApartmentsListingService
+from ..Apartments.ApartmentsUrlService import ApartmentsUrlService
+from ..constants import apartmentsSearchingTag
 from ..FBM.FBMUrlService import FBMUrlService
+from ..FBM.FBMListingService import FBMListingService
+from ..constants import fbmSearchingTag
 from ..enums import REType, LeaseTerm
 from ..utils.scrapingUtils import followTagMap, findIntegerListMonths, findIntegerMonths
 from ..constants import usStateToAbbrev
@@ -23,6 +31,8 @@ from ..constants import rentSearchingTag, fbmSearchingTag, zillowSearchingTag, a
 from ..Scrape.Scraper import Scraper
 from ..DBInterface import DBInterface
 from ..RequestHub import RequestHub
+from ..loggers.RequestLogger import RequestLogger
+from ..loggers.ScrapeLogger import ScrapeLogger
 
 from ..Zillow.ZillowListingService import ZillowListingService
 from ..Zillow.ZillowUrlService import ZillowUrlService
@@ -332,7 +342,7 @@ def testNYCQuery() -> bool:
         dbInterface = dbInterface, 
         requestHub=requestHub,
         scrapeWithProxy=False,
-        scrapeHeadlessly=False
+        scrapeHeadlessly=False,
     )
 
     airbnbScraper.executeQuery(testQuery)
@@ -358,7 +368,6 @@ def testUrlBuilders() -> bool:
         pets=False,
         transit=False,
         hasProxyPermission=False)
-    
     
     dbInterface: DBInterface = DBInterface()
     requestHub: RequestHub = RequestHub()
@@ -398,3 +407,149 @@ def testUrlBuilders() -> bool:
         return False
     print(url)
     return True
+
+def runQueryOnProvider(query, providerName):
+    scrapeLog: TextIO = open('scrapeLog.log', 'w+')
+    requestLog: TextIO = open('requestLog.log', 'w+')
+    scrapeLogger: ScrapeLogger = ScrapeLogger(scrapeLog)
+    requestLogger: RequestLogger = RequestLogger(requestLog)
+    dbInterface: DBInterface = DBInterface()
+    requestHub: RequestHub = RequestHub()
+
+    airbnbUrlService: UrlService = AirbnbUrlService()
+    url: str | None = airbnbUrlService.construct(query)
+    if url is None:
+        print('url construct failed')
+        return False
+    print(url)
+    airbnbListingService: ListingService = AirbnbListingService()
+    airbnbParsingModel = ParsingModel(targetTag=airbnbSearchingTag, requiresTagMap=False, listingService=airbnbListingService)
+    airbnbScraper: Scraper = Scraper(
+        urlString ='https://www.airbnb.com', 
+        urlService=airbnbUrlService, 
+        listingService=airbnbListingService,
+        paginationModel=None, 
+        parsingModel=airbnbParsingModel, 
+        dbInterface = dbInterface, 
+        requestHub=requestHub,
+        scrapeWithProxy=False,
+        scrapeHeadlessly=False,
+    )
+
+    rentUrlService: UrlService = RentUrlService()
+    url: str | None = rentUrlService.construct(query)
+    if url is None:
+        print('url construct failed')
+        return False
+    print(url)
+    rentListingService: ListingService = RentListingService()
+    rentParsingModel = ParsingModel(targetTag=rentSearchingTag, requiresTagMap=False, listingService=rentListingService)
+    rentScraper: Scraper = Scraper(
+        urlString ='https://www.airbnb.com', 
+        urlService=rentUrlService, 
+        listingService=rentListingService,
+        paginationModel=None, 
+        parsingModel=rentParsingModel, 
+        dbInterface = dbInterface, 
+        requestHub=requestHub,
+        scrapeWithProxy=False,
+        scrapeHeadlessly=False,
+    )
+
+    zillowUrlService: UrlService = ZillowUrlService()
+    url: str | None = zillowUrlService.construct(query)
+    if url is None:
+        print('url construct failed')
+        return False
+    print(url)
+    zillowListingService: ListingService = ZillowListingService()
+    zillowParsingModel = ParsingModel(targetTag=zillowSearchingTag, requiresTagMap=False, listingService=zillowListingService)
+    zillowScraper: Scraper = Scraper(
+        urlString ='https://www.airbnb.com', 
+        urlService=zillowUrlService, 
+        listingService=zillowListingService,
+        paginationModel=None, 
+        parsingModel=zillowParsingModel, 
+        dbInterface = dbInterface, 
+        requestHub=requestHub,
+        scrapeWithProxy=False,
+        scrapeHeadlessly=False,
+    )
+
+    aptsUrlService: UrlService = ApartmentsUrlService()
+    url: str | None = aptsUrlService.construct(query)
+    if url is None:
+        print('url construct failed')
+        return False
+    print(url)
+    aptsListingService: ListingService = ApartmentsListingService()
+    aptsParsingModel = ParsingModel(targetTag=apartmentsSearchingTag, requiresTagMap=False, listingService=aptsListingService)
+    aptsScraper: Scraper = Scraper(
+        urlString ='https://www.airbnb.com', 
+        urlService=aptsUrlService, 
+        listingService=aptsListingService,
+        paginationModel=None, 
+        parsingModel=aptsParsingModel, 
+        dbInterface = dbInterface, 
+        requestHub=requestHub,
+        scrapeWithProxy=False,
+        scrapeHeadlessly=False,
+    )
+
+    fbmUrlService: UrlService = FBMUrlService()
+    url: str | None = fbmUrlService.construct(query)
+    if url is None:
+        print('url construct failed')
+        return False
+    print(url)
+    fbmListingService: ListingService = FBMListingService()
+    fbmParsingModel = ParsingModel(targetTag=fbmSearchingTag, requiresTagMap=False, listingService=fbmListingService)
+    fbmScraper: Scraper = Scraper(
+        urlString ='https://www.airbnb.com', 
+        urlService=fbmUrlService, 
+        listingService=fbmListingService,
+        paginationModel=None, 
+        parsingModel=fbmParsingModel, 
+        dbInterface = dbInterface, 
+        requestHub=requestHub,
+        scrapeWithProxy=False,
+        scrapeHeadlessly=False,
+    )
+
+    match providerName:
+        case 'rent.com':
+            rentScraper.executeQuery(query)
+        case 'facebook':
+            fbmScraper.executeQuery(query)
+        case 'apartments.com':
+            aptsScraper.executeQuery(query)
+        case 'zillow':
+            zillowScraper.executeQuery(query)
+        case 'airbnb':
+            airbnbScraper.executeQuery(query)
+
+    scrapeLogger.dumpLogs()
+    requestLogger.dumpLogs()
+    scrapeLog.close()
+    requestLog.close()
+
+def getTestQuery(locStr: str) -> Query | None:
+    geocoder = GoogleV3(api_key=config['GOOGLE_MAPS_API_KEY'])
+    geocode = RateLimiter(geocoder.geocode, min_delay_seconds=1, return_value_on_exception=None)
+    encoded = geocode(locStr)
+    if encoded is None:
+        print('location encode failed')
+        return None
+
+    testQuery: Query = Query(
+        name='unitTestQuery',
+        location=encoded,
+        reType=REType.Apartment,
+        bedrooms=1,
+        priceRange=[0, 10000],
+        leaseTerm=LeaseTerm.LongTerm,
+        leaseDuration=12,
+        pets=False,
+        transit=False,
+        hasProxyPermission=False)
+    return testQuery

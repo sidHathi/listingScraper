@@ -31,7 +31,7 @@ class Scraper:
         parsingModel: ParsingModel,
         dbInterface: DBInterface,
         requestHub:  RequestHub, 
-        scrapeLogger: ScrapeLogger,
+        scrapeLogger: ScrapeLogger | None = None,
         scrapeWithProxy: bool = False,
         scrapeHeadlessly: bool = False) -> None:
         self.urlString: str = urlString
@@ -43,7 +43,7 @@ class Scraper:
         self.paginationModel: PaginationModel | None = paginationModel
         self.parsingModel: ParsingModel = parsingModel
         self.dbInterface: DBInterface = dbInterface
-        self.scrapeLogger: ScrapeLogger = scrapeLogger
+        self.scrapeLogger: ScrapeLogger | None = scrapeLogger
         self.requestHub = requestHub
         self.scrapeWithProxy = scrapeWithProxy
         self.scrapeHeadlessly = scrapeHeadlessly
@@ -165,7 +165,8 @@ class Scraper:
                 # print(page.prettify())
                 matchingTags = followTagMap(fieldMap, page)
                 if len(matchingTags) < 1:
-                    self.scrapeLogger.addEvent(url, field, None)
+                    if self.scrapeLogger is not None:
+                        self.scrapeLogger.addEvent(url, field, None)
                     print(f'NO MATCHING TAG FOUND FOR {field}');
                     if queryVal is not None:
                         listingJson[listingMap[field]] = queryToListingFieldConvert(queryVal, field)
@@ -180,7 +181,8 @@ class Scraper:
                     valStr = matchedTag.get(specialField)
                     assert(valStr is not None and type(valStr) == 'str')
                 val = self.listingService.parse(field, str(valStr), queryVal)
-                self.scrapeLogger.checkVal(url, field, val)
+                if self.scrapeLogger is not None:
+                    self.scrapeLogger.checkVal(url, field, val)
                 listingJson[listingMap[field]] = val
             listing = Listing(**listingJson)
             listings.append(listing)
