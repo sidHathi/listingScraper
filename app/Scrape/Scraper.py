@@ -180,6 +180,7 @@ class Scraper:
                     valStr = matchedTag.get(specialField)
                     assert(valStr is not None and type(valStr) == 'str')
                 val = self.listingService.parse(field, str(valStr), queryVal)
+                self.scrapeLogger.checkVal(url, field, val)
                 listingJson[listingMap[field]] = val
             listing = Listing(**listingJson)
             listings.append(listing)
