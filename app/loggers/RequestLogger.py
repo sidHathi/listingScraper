@@ -11,7 +11,7 @@ class RequestLogger:
         self.nonProxyFailures: int = 0
 
     def addFailureToDict(self, dict: dict[str, dict[str, int]], userAgent: str, url: str, proxyUse: bool):
-        domain: str = urlparse.urlparse(url).netloc
+        domain: str = urlparse(url).netloc
         if domain not in dict:
             dict[domain] = {f'{userAgent}': 0}
 
