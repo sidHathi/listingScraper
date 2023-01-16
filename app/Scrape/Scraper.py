@@ -18,6 +18,7 @@ from ..models.ParsingModel import ParsingModel
 from ..models.TagModel import TagModel
 from ..DBInterface import DBInterface
 from ..RequestHub import RequestHub
+from ..loggers.ScrapeLogger import ScrapeLogger
 from ..utils.scrapingUtils import htmlPull, followTagMap, queryToListingFieldConvert
 from ..interfaces.ListingService import ListingService
 
@@ -30,6 +31,7 @@ class Scraper:
         parsingModel: ParsingModel,
         dbInterface: DBInterface,
         requestHub:  RequestHub, 
+        scrapeLogger: ScrapeLogger,
         scrapeWithProxy: bool = False,
         scrapeHeadlessly: bool = False) -> None:
         self.urlString: str = urlString
@@ -41,6 +43,7 @@ class Scraper:
         self.paginationModel: PaginationModel | None = paginationModel
         self.parsingModel: ParsingModel = parsingModel
         self.dbInterface: DBInterface = dbInterface
+        self.scrapeLogger: ScrapeLogger = scrapeLogger
         self.requestHub = requestHub
         self.scrapeWithProxy = scrapeWithProxy
         self.scrapeHeadlessly = scrapeHeadlessly
@@ -162,6 +165,7 @@ class Scraper:
                 # print(page.prettify())
                 matchingTags = followTagMap(fieldMap, page)
                 if len(matchingTags) < 1:
+                    self.scrapeLogger.addEvent(url, field, None)
                     print(f'NO MATCHING TAG FOUND FOR {field}');
                     if queryVal is not None:
                         listingJson[listingMap[field]] = queryToListingFieldConvert(queryVal, field)

@@ -54,7 +54,7 @@ class DBInterface:
         self.migrationsCol.delete_one({'index': index})
 
     def getQueries(self) -> list[dict[str, Any]]:
-        return list(self.queriesCol.find())
+        return list(self.queriesCol.find().sort('_id', -1))
     
     def updateQueryField(self, id: str, fieldName: str, newVal: Any):
         self.queriesCol.update_one({'_id': id}, {'$set': {fieldName: newVal}})

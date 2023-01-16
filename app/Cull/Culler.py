@@ -11,6 +11,8 @@ from bs4 import BeautifulSoup
 from undetected_chromedriver import Chrome as uChrome
 from selenium.webdriver.chrome.options import Options as ChromeOptions
 
+expirationTimeInDays = 10
+
 class Culler:
     def __init__(self, cullingModels: dict[str, CullingModel], dbInterface : DBInterface, requestHub: RequestHub):
         self.cullingModels: dict[str, CullingModel] = cullingModels
@@ -23,32 +25,32 @@ class Culler:
         self.dbUrlNamePairs = self.dbInterface.getListingsCullingInfo()
 
     def checkListingIsExpired(self, provider: str, url: str) -> bool:
-        # one retry for possible connection error
-        html: str | None = self.requestHub.executeRequest(
-            url=url,
-            elemOnSuccess=self.cullingModels[provider].elemOnPageLoad,
-            proxy=False # no proxy use to conserve data throughput
-        )
-        if html is None:
-            return False
+        if provider in self.cullingModels:
+            # one retry for possible connection error
+            html: str | None = self.requestHub.executeRequest(
+                url=url,
+                elemOnSuccess=self.cullingModels[provider].elemOnPageLoad,
+                proxy=False # no proxy use to conserve data throughput
+            )
+            if html is None:
+                return False
+            soup: BeautifulSoup = BeautifulSoup(html, 'html.parser')
+            notFoundTag: TagModel | None = self.cullingModels[provider].notFoundTag
 
-        soup: BeautifulSoup = BeautifulSoup(html, 'html.parser')
-        notFoundTag: TagModel | None = self.cullingModels[provider].notFoundTag
-        if notFoundTag is not None and soup.find(notFoundTag.tagType, notFoundTag.identifiers) is not None:
-            return True
-
-        statusTags: list[BeautifulSoup] = followTagMap(self.cullingModels[provider].tagMap, soup)
-        if len(statusTags) != 1:
-            return False
-
-        targetVal = self.cullingModels[provider].targetVal
-        targetField = self.cullingModels[provider].targetField
-        if targetField is None:
-            if targetVal in statusTags[0].text:
+            if notFoundTag is not None and soup.find(notFoundTag.tagType, notFoundTag.identifiers) is not None:
                 return True
-        else:
-            if statusTags[0].get(targetField) == targetVal:
-                return True
+            statusTags: list[BeautifulSoup] = followTagMap(self.cullingModels[provider].tagMap, soup)
+            if len(statusTags) != 1:
+                return False
+
+            targetVal = self.cullingModels[provider].targetVal
+            targetField = self.cullingModels[provider].targetField
+            if targetField is None:
+                if targetVal in statusTags[0].text:
+                    return True
+            else:
+                if statusTags[0].get(targetField) == targetVal:
+                    return True
         return False
 
     async def cullExpiredListings(self):
@@ -65,7 +67,7 @@ class Culler:
             currentTime = datetime.today()
             timeDif: timedelta = currentTime - pair['scrapeTime']
             price = pair['price']
-            if timeDif.days > self.cullingModels[provider].expirationTimeInDays or price < 0:
+            if timeDif.days > expirationTimeInDays or price < 0:
                 assert '_id' in pair
                 print(f'deleting {pair}')
                 self.dbInterface.removeListing(pair['_id'])

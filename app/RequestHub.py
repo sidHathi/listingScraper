@@ -18,6 +18,7 @@ from dotenv import dotenv_values
 
 from .selenium_python import smartproxy
 from .models.TagModel import TagModel
+from .loggers.RequestLogger import RequestLogger
 
 
 proxyUrl: str = 'geo.iproyal.com:12321'
@@ -26,7 +27,7 @@ requestTimeout: int = 10
 config = dotenv_values('.env')
 
 class RequestHub:
-    def __init__(self) -> None:
+    def __init__(self, requestLogger: RequestLogger | None = None) -> None:
         assert config['PROXY_AVAILABLE'] is not None
         print('rqh initializing')
         software_names: list[str] = [SoftwareName.CHROME.value]
@@ -39,6 +40,7 @@ class RequestHub:
         self.prox.auto_detect = False
         self.prox.http_proxy = proxyUrl
         self.prox.ssl_proxy = proxyUrl
+        self.requestLogger: RequestLogger | None = requestLogger
 
         match config['PROXY_AVAILABLE']:
             case 'yes':
@@ -95,14 +97,20 @@ class RequestHub:
                 )
             except TimeoutException:
                 print(f'timeout for {url}')
+                if self.requestLogger is not None:
+                    self.requestLogger.logTimeoutFailure(userAgent, url, proxy)
                 sleep(6)
                 return None
             except WebDriverException as e:
                 print(e)
+                if self.requestLogger is not None:
+                    self.requestLogger.logWebdriverFailure(userAgent, url, proxy)
                 sleep(6)
                 return None
             except Exception as e:
                 print(e)
+                if self.requestLogger is not None:
+                    self.requestLogger.logGenericFailure(userAgent, url, proxy)
                 sleep(6)
                 return None
 

@@ -1,5 +1,8 @@
+from typing import TextIO
+
 from .QueryReader import QueryReader
 from .Scraper import Scraper
+from ..loggers.ScrapeLogger import ScrapeLogger
 from ..DBInterface import DBInterface
 from ..RequestHub import RequestHub
 from ..models.Query import Query
@@ -20,9 +23,10 @@ from ..Airbnb.AirbnbListingService import AirbnbListingService
 from ..Airbnb.AirbnbUrlService import AirbnbUrlService
 
 class App:
-    def __init__(self, dbInterface: DBInterface, requestHub: RequestHub):
+    def __init__(self, dbInterface: DBInterface, requestHub: RequestHub, writeFile: TextIO | None = None):
         self.dbInterface: DBInterface = dbInterface
         self.requestHub: RequestHub = requestHub
+        self.scrapeLogger: ScrapeLogger = ScrapeLogger(writeFile)
 
     def getQueries(self) -> list[Query]:
         reader: QueryReader = QueryReader(self.dbInterface)
@@ -42,7 +46,8 @@ class App:
             dbInterface = self.dbInterface, 
             requestHub=self.requestHub,
             scrapeWithProxy=False,
-            scrapeHeadlessly=False
+            scrapeHeadlessly=False,
+            scrapeLogger=self.scrapeLogger
         )
 
         fbmUrlService: UrlService = FBMUrlService()
@@ -57,7 +62,8 @@ class App:
             dbInterface = self.dbInterface, 
             requestHub=self.requestHub,
             scrapeWithProxy=True,
-            scrapeHeadlessly=True
+            scrapeHeadlessly=True,
+            scrapeLogger=self.scrapeLogger
         )
 
         zillowUrlService: UrlService = ZillowUrlService()
@@ -72,7 +78,8 @@ class App:
             dbInterface = self.dbInterface, 
             requestHub=self.requestHub,
             scrapeWithProxy=True,
-            scrapeHeadlessly=False
+            scrapeHeadlessly=False,
+            scrapeLogger=self.scrapeLogger
         )
 
         apartmentsUrlService: UrlService = ApartmentsUrlService()
@@ -87,7 +94,8 @@ class App:
             dbInterface = self.dbInterface, 
             requestHub=self.requestHub,
             scrapeWithProxy=False,
-            scrapeHeadlessly=False
+            scrapeHeadlessly=False,
+            scrapeLogger=self.scrapeLogger
         )
 
         airbnbUrlService: UrlService = AirbnbUrlService()
@@ -102,7 +110,8 @@ class App:
             dbInterface = self.dbInterface, 
             requestHub=self.requestHub,
             scrapeWithProxy=True,
-            scrapeHeadlessly=False
+            scrapeHeadlessly=False,
+            scrapeLogger=self.scrapeLogger
         )
 
         return [airbnbScraper, zillowScraper, fbmScraper, apartmentsScraper, rentScraper]
@@ -115,3 +124,5 @@ class App:
         for query in queries:
             for scraper in scrapers:
                 scraper.executeQuery(query)
+
+        self.scrapeLogger.dumpLogs()
