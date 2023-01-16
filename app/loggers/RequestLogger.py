@@ -13,7 +13,9 @@ class RequestLogger:
     def addFailureToDict(self, dict: dict[str, dict[str, int]], userAgent: str, url: str, proxyUse: bool):
         domain: str = urlparse(url).netloc
         if domain not in dict:
-            dict[domain] = {f'{userAgent}': 0}
+            dict[domain] = {}
+        if userAgent not in dict[domain]:
+            dict[domain][userAgent] = 0
 
         dict[domain][userAgent] += 1
         if proxyUse:
