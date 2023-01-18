@@ -15,6 +15,7 @@ from random_user_agent.params import SoftwareName, OperatingSystem
 from typing import Any
 from time import sleep
 from dotenv import dotenv_values
+from urllib.parse import urlparse
 
 from .selenium_python import smartproxy
 from .models.TagModel import TagModel
@@ -41,6 +42,7 @@ class RequestHub:
         self.prox.http_proxy = proxyUrl
         self.prox.ssl_proxy = proxyUrl
         self.requestLogger: RequestLogger | None = requestLogger
+        self.user_agent_blacklist: dict[str, set[str]] | None = None
 
         match config['PROXY_AVAILABLE']:
             case 'yes':
@@ -48,9 +50,17 @@ class RequestHub:
             case 'no':
                 self.proxyAvailable = False
 
+    def addBlacklist(self, blacklist: dict[str, set[str]]):
+        self.user_agent_blacklist = blacklist
+
     def tryRequest(self, url: str, elemOnSuccess: TagModel, proxy: bool = False, headless: bool = False) -> str | None:
         for _ in range(maxRetires):
             userAgent: str = self.user_agent_rotator.get_random_user_agent()
+            domain: str = urlparse(url).netloc
+            # don't allow user agents from blacklist
+            if self.user_agent_blacklist is not None and domain in self.user_agent_blacklist:
+                while userAgent in self.user_agent_blacklist[domain]:
+                    userAgent = self.user_agent_rotator.get_random_user_agent()
 
             try:
                 opts = Options()
@@ -97,6 +107,8 @@ class RequestHub:
                 )
             except TimeoutException:
                 print(f'timeout for {url}')
+                if self.user_agent_blacklist is not None and domain in self.user_agent_blacklist:
+                    self.user_agent_blacklist[domain].add(userAgent)
                 if self.requestLogger is not None:
                     self.requestLogger.logTimeoutFailure(userAgent, url, proxy)
                 sleep(6)

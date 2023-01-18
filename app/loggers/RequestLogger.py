@@ -1,4 +1,5 @@
 from typing import TextIO
+import json
 from urllib.parse import urlparse
 
 class RequestLogger:
@@ -9,6 +10,12 @@ class RequestLogger:
         self.genericFailures: dict[str, dict[str, int]] = {}
         self.proxyFailures: int = 0
         self.nonProxyFailures: int = 0
+        self.userAgentBlacklist: dict[str, set[str]] | None = None
+        self.blacklistFile: TextIO | None = None
+
+    def addBlacklist(self, blacklist: dict[str, set[str]], writeLoc: TextIO | None):
+        self.userAgentBlacklist = blacklist
+        self.blacklistFile = writeLoc
 
     def initializeWebdriverDict(self, dict: dict[str, dict[str, int]], userAgent: str, url: str):
         domain: str = urlparse(url).netloc
@@ -19,6 +26,11 @@ class RequestLogger:
 
     def addFailureToDict(self, dict: dict[str, dict[str, int]], userAgent: str, url: str, proxyUse: bool):
         domain: str = urlparse(url).netloc
+        if self.userAgentBlacklist is not None:
+            if domain not in self.userAgentBlacklist:
+                self.userAgentBlacklist[domain] = set()
+            self.userAgentBlacklist[domain].add(userAgent)
+
         if domain not in dict:
             dict[domain] = {}
         if userAgent not in dict[domain]:
@@ -44,6 +56,12 @@ class RequestLogger:
         self.initializeWebdriverDict(self.webDriverFailures, userAgent, url)
         self.initializeWebdriverDict(self.genericFailures, userAgent, url)
 
+    def encodeBlackList(self, blacklist: dict[str, set[str]]) -> dict[str, list[str]]:
+        out: dict[str, list[str]] = {}
+        for key, val in blacklist.items():
+            out[key] = list(val)
+        return out
+
     def dumpLogs(self):
         if self.logFile is None:
             print("webdriver failure breakdown:")
@@ -60,5 +78,8 @@ class RequestLogger:
         self.logFile.write(f'{str(self.timeoutFailures)}\n')
         self.logFile.write("generic failure breakdown:\n")
         self.logFile.write(f'{str(self.genericFailures)}\n')
+
+        if self.blacklistFile is not None and self.userAgentBlacklist is not None:
+            self.blacklistFile.write(json.dumps(self.encodeBlackList(self.userAgentBlacklist)))
 
         

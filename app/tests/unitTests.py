@@ -8,18 +8,8 @@ from typing import TextIO
 from ..models.TagModel import TagModel
 from ..models.Query import Query
 from ..interfaces.UrlService import UrlService
-from ..Rent.RentUrlService import RentUrlService
-from ..Zillow.ZillowUrlService import ZillowUrlService
-from ..Apartments.ApartmentsUrlService import ApartmentsUrlService
-from ..Airbnb.AirbnbUrlService import AirbnbUrlService
-from ..Airbnb.AirbnbListingService import AirbnbListingService
-from ..Rent.RentListingService import RentListingService
 from ..constants import rentSearchingTag
-from ..Apartments.ApartmentsListingService import ApartmentsListingService
-from ..Apartments.ApartmentsUrlService import ApartmentsUrlService
 from ..constants import apartmentsSearchingTag
-from ..FBM.FBMUrlService import FBMUrlService
-from ..FBM.FBMListingService import FBMListingService
 from ..constants import fbmSearchingTag
 from ..enums import REType, LeaseTerm
 from ..utils.scrapingUtils import followTagMap, findIntegerListMonths, findIntegerMonths
@@ -33,9 +23,18 @@ from ..DBInterface import DBInterface
 from ..RequestHub import RequestHub
 from ..loggers.RequestLogger import RequestLogger
 from ..loggers.ScrapeLogger import ScrapeLogger
+from ..utils.requestUtils import getFailureDictsFromLogFile, buildBlackListFromFailureDicts, buildBlacklist
 
 from ..Zillow.ZillowListingService import ZillowListingService
 from ..Zillow.ZillowUrlService import ZillowUrlService
+from ..FBM.FBMUrlService import FBMUrlService
+from ..FBM.FBMListingService import FBMListingService
+from ..Airbnb.AirbnbUrlService import AirbnbUrlService
+from ..Airbnb.AirbnbListingService import AirbnbListingService
+from ..Rent.RentListingService import RentListingService
+from ..Rent.RentUrlService import RentUrlService
+from ..Apartments.ApartmentsListingService import ApartmentsListingService
+from ..Apartments.ApartmentsUrlService import ApartmentsUrlService
 
 config = dotenv_values('.env')
 
@@ -408,13 +407,20 @@ def testUrlBuilders() -> bool:
     print(url)
     return True
 
-def runQueryOnProvider(query, providerName):
+def runQueryOnProvider(query: Query, providerName: str, scrapeLimit: int | None = None):
+    blacklist: dict[str, set[str]] | None = buildBlacklist()
+    print(blacklist)
+
     scrapeLog: TextIO = open('scrapeLog.log', 'w+')
     requestLog: TextIO = open('requestLog.log', 'w+')
     scrapeLogger: ScrapeLogger = ScrapeLogger(scrapeLog)
     requestLogger: RequestLogger = RequestLogger(requestLog)
     dbInterface: DBInterface = DBInterface()
-    requestHub: RequestHub = RequestHub()
+    requestHub: RequestHub = RequestHub(requestLogger)
+    if blacklist is not None:
+        blacklistLog: TextIO = open('blacklist.log', 'w+')
+        requestLogger.addBlacklist(blacklist, blacklistLog)
+        requestHub.addBlacklist(blacklist)
 
     airbnbUrlService: UrlService = AirbnbUrlService()
     url: str | None = airbnbUrlService.construct(query)
@@ -434,6 +440,8 @@ def runQueryOnProvider(query, providerName):
         requestHub=requestHub,
         scrapeWithProxy=False,
         scrapeHeadlessly=False,
+        scrapeLogger=scrapeLogger,
+        scrapeLimit=scrapeLimit
     )
 
     rentUrlService: UrlService = RentUrlService()
@@ -445,7 +453,7 @@ def runQueryOnProvider(query, providerName):
     rentListingService: ListingService = RentListingService()
     rentParsingModel = ParsingModel(targetTag=rentSearchingTag, requiresTagMap=False, listingService=rentListingService)
     rentScraper: Scraper = Scraper(
-        urlString ='https://www.airbnb.com', 
+        urlString ='https://www.rent.com', 
         urlService=rentUrlService, 
         listingService=rentListingService,
         paginationModel=None, 
@@ -454,6 +462,8 @@ def runQueryOnProvider(query, providerName):
         requestHub=requestHub,
         scrapeWithProxy=False,
         scrapeHeadlessly=False,
+        scrapeLogger=scrapeLogger,
+        scrapeLimit=scrapeLimit
     )
 
     zillowUrlService: UrlService = ZillowUrlService()
@@ -465,7 +475,7 @@ def runQueryOnProvider(query, providerName):
     zillowListingService: ListingService = ZillowListingService()
     zillowParsingModel = ParsingModel(targetTag=zillowSearchingTag, requiresTagMap=False, listingService=zillowListingService)
     zillowScraper: Scraper = Scraper(
-        urlString ='https://www.airbnb.com', 
+        urlString ='https://www.zillow.com', 
         urlService=zillowUrlService, 
         listingService=zillowListingService,
         paginationModel=None, 
@@ -474,6 +484,8 @@ def runQueryOnProvider(query, providerName):
         requestHub=requestHub,
         scrapeWithProxy=False,
         scrapeHeadlessly=False,
+        scrapeLogger=scrapeLogger,
+        scrapeLimit=scrapeLimit
     )
 
     aptsUrlService: UrlService = ApartmentsUrlService()
@@ -485,7 +497,7 @@ def runQueryOnProvider(query, providerName):
     aptsListingService: ListingService = ApartmentsListingService()
     aptsParsingModel = ParsingModel(targetTag=apartmentsSearchingTag, requiresTagMap=False, listingService=aptsListingService)
     aptsScraper: Scraper = Scraper(
-        urlString ='https://www.airbnb.com', 
+        urlString ='https://www.apartments.com', 
         urlService=aptsUrlService, 
         listingService=aptsListingService,
         paginationModel=None, 
@@ -494,6 +506,8 @@ def runQueryOnProvider(query, providerName):
         requestHub=requestHub,
         scrapeWithProxy=False,
         scrapeHeadlessly=False,
+        scrapeLogger=scrapeLogger,
+        scrapeLimit=scrapeLimit
     )
 
     fbmUrlService: UrlService = FBMUrlService()
@@ -505,7 +519,7 @@ def runQueryOnProvider(query, providerName):
     fbmListingService: ListingService = FBMListingService()
     fbmParsingModel = ParsingModel(targetTag=fbmSearchingTag, requiresTagMap=False, listingService=fbmListingService)
     fbmScraper: Scraper = Scraper(
-        urlString ='https://www.airbnb.com', 
+        urlString ='https://www.facebook.com/marketplace', 
         urlService=fbmUrlService, 
         listingService=fbmListingService,
         paginationModel=None, 
@@ -514,6 +528,8 @@ def runQueryOnProvider(query, providerName):
         requestHub=requestHub,
         scrapeWithProxy=False,
         scrapeHeadlessly=False,
+        scrapeLogger=scrapeLogger,
+        scrapeLimit=scrapeLimit
     )
 
     match providerName:
@@ -553,3 +569,8 @@ def getTestQuery(locStr: str) -> Query | None:
         transit=False,
         hasProxyPermission=False)
     return testQuery
+
+def testLogFileRead():
+    file: TextIO = open('requestLog.log', 'r')
+    print(getFailureDictsFromLogFile(file))
+    file.close()

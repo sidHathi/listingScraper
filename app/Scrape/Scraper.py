@@ -33,7 +33,8 @@ class Scraper:
         requestHub:  RequestHub, 
         scrapeLogger: ScrapeLogger | None = None,
         scrapeWithProxy: bool = False,
-        scrapeHeadlessly: bool = False) -> None:
+        scrapeHeadlessly: bool = False,
+        scrapeLimit: int | None = None) -> None:
         self.urlString: str = urlString
         self.urlService: UrlService = urlService
         self.listingService: ListingService = listingService
@@ -47,6 +48,7 @@ class Scraper:
         self.requestHub = requestHub
         self.scrapeWithProxy = scrapeWithProxy
         self.scrapeHeadlessly = scrapeHeadlessly
+        self.scrapeLimit: int | None = scrapeLimit
 
 
     def searchHtmlPull(self, query: Query) -> None:
@@ -77,10 +79,15 @@ class Scraper:
             return pair['url']
         alreadyScraped: set[str] = set(list(map(getUrlFromPair, urlIdPairs)))
 
+        numScraped: int = 0
         rawPages: list[str | None] = []
         for url in urls:
+            if self.scrapeLimit is not None and self.scrapeLimit < numScraped:
+                break;
             if url not in alreadyScraped:
                 rawPages.append(self.requestHub.executeRequest(url, self.parsingModel.listingService.getOnSuccessTag(), self.scrapeWithProxy and queryWithProxy, self.scrapeHeadlessly))
+                alreadyScraped.add(url)
+                numScraped += 1
                 
         def getSoup(page) -> BeautifulSoup:
             soup = BeautifulSoup(page, 'html.parser')
