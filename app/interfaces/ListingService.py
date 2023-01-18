@@ -33,14 +33,16 @@ class ListingService(ABC):
     @abstractmethod
     def parseBedroomOptions(self, opts: str, queryVal: Any | None = None) -> list[int]:
         print(opts)
-        studioMatches: list[str] = re.findall(r'(studio)', opts, re.IGNORECASE)
+        studioMatches: list[str] = re.findall(r'((studio))', opts, re.IGNORECASE)
         if len(studioMatches) > 0:
             return [0, 0] # must be 'Studio'
         
-        bedsRegexMatch = re.search(r'([-–\d\s]+(beds|bed|bd))', opts, re.I)
+        bedsRegexMatch = re.search(r'([-–\d\s]+(beds|bed|bd))', opts, re.IGNORECASE)
+        print(bedsRegexMatch)
         if bedsRegexMatch is None:
             return [0, 0]
         bedsStr: str = re.sub(r'[^0-9-–]', '', bedsRegexMatch.group())
+        print(bedsStr)
         if len(bedsStr) < 1:
             assert(queryVal is not None)
             return [int(queryVal), int(queryVal)]

@@ -497,7 +497,7 @@ def runQueryOnProvider(query: Query, providerName: str, scrapeLimit: int | None 
     aptsListingService: ListingService = ApartmentsListingService()
     aptsParsingModel = ParsingModel(targetTag=apartmentsSearchingTag, requiresTagMap=False, listingService=aptsListingService)
     aptsScraper: Scraper = Scraper(
-        urlString ='https://www.apartments.com', 
+        urlString = '', 
         urlService=aptsUrlService, 
         listingService=aptsListingService,
         paginationModel=None, 

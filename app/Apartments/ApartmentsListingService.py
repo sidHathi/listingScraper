@@ -22,7 +22,26 @@ class ApartmentsListingService(ListingService):
         return super().parseLocation(locStr, queryVal)
     
     def parseBedroomOptions(self, opts: str, queryVal: Any | None = None) -> list[int]:
-        return super().parseBedroomOptions(opts, queryVal)
+        print(opts)
+        studioMatches: list[str] = re.findall(r'((studio))', opts, re.IGNORECASE)
+        if len(studioMatches) > 0:
+            return [0, 0] # must be 'Studio'
+        
+        bedsRegexMatch = re.search(r'(\s[-–\d\s]+(bd))', opts, re.IGNORECASE)
+        print(bedsRegexMatch)
+        if bedsRegexMatch is None:
+            return [0, 0]
+        bedsStr: str = re.sub(r'[^0-9-–]', '', bedsRegexMatch.group())
+        print(bedsStr)
+        if len(bedsStr) < 1:
+            assert(queryVal is not None)
+            return [int(queryVal), int(queryVal)]
+        splitVal = re.split(r'[-–]', bedsStr)
+        lower = splitVal[0]
+        if len(splitVal) == 1:
+            return [int(lower), int(lower)]
+        upper = splitVal[1]
+        return [int(lower), int(upper)]
     
     def parsePrice(self, price: str, queryVal: Any | None = None) -> int:
         return super().parsePrice(price)
@@ -54,8 +73,8 @@ class ApartmentsListingService(ListingService):
             ListingField.REType: None, # use query val
             ListingField.REType: None, # use query val
             ListingField.Bedrooms: [
-                TagModel(tagType='ul', identifiers={
-                    'class': 'priceBedRangeInfo'
+                TagModel(tagType='div', identifiers={
+                    'id': 'priceBedBathAreaInfoWrapper'
                 })
             ],
             ListingField.Price: [
