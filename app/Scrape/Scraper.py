@@ -21,6 +21,7 @@ from ..RequestHub import RequestHub
 from ..loggers.ScrapeLogger import ScrapeLogger
 from ..utils.scrapingUtils import htmlPull, followTagMap, queryToListingFieldConvert
 from ..interfaces.ListingService import ListingService
+from ..utils.ListingFlagger import ListingFlagger
 
 class Scraper:
     def __init__(self, 
@@ -203,5 +204,6 @@ class Scraper:
 
         for listing in listings:
             # print(listing)
-            self.dbInterface.addListing(listing)
+            if ListingFlagger().checkValidListing(listing.dict()):
+                self.dbInterface.addListing(listing)
 

@@ -2,24 +2,23 @@ from typing import TextIO
 import ast
 import json
 
-def getFailureDictsFromLogFile(file: TextIO) -> list[dict[str, dict[str, int]]] | None:
+def getTimeoutDictFromLogFile(file: TextIO) -> dict[str, dict[str, int]] | None:
     try:
         file.readline()
         webdriverString: str = file.readline()
-        webdriverDict: dict[str, dict[str, int]] = ast.literal_eval(webdriverString)
         file.readline()
-        tiemoutString: str = file.readline()
-        timeoutDict: dict[str, dict[str, int]] = ast.literal_eval(tiemoutString)
-        return [webdriverDict, timeoutDict]
-    except Exception:
+        timeoutString: str = file.readline()
+        print('timeout string ' + str(timeoutString))
+        timeoutDict: dict[str, dict[str, int]] = ast.literal_eval(timeoutString)
+        print('timeout dict ' + str(timeoutDict))
+
+        return timeoutDict
+    except Exception as e:
+        print('EXCEPTION: ' + str(e))
         return None
     
-def buildBlackListFromFailureDicts(dicts: list[dict[str, dict[str, int]]]) -> dict[str, set[str]] | None:
-    if len(dicts) < 2:
-        return None
-    
+def buildBlackListFromFailureDict(timeoutDict: dict[str, dict[str, int]]) -> dict[str, set[str]] | None:
     blacklists: dict[str, set[str]] = {}
-    timeoutDict: dict[str, dict[str, int]] = dicts[1]
     for key, val in timeoutDict.items():
         blacklists[key] = set()
         for driver, numFailures in val.items():
@@ -47,15 +46,17 @@ def reconstituteBlacklist(file: TextIO) -> dict[str, set[str]] | None:
         return None
 
 def buildBlacklist() -> dict[str, set[str]] | None:
-    blacklistFile: TextIO = open('requestLog.log', 'r')
-    requestLog: TextIO = open('blacklist.log', 'r')
-    failureDicts: list[dict[str, dict[str, int]]] | None = getFailureDictsFromLogFile(requestLog)
-    if failureDicts is None:
+    requestLog: TextIO = open('requestLog.log', 'r')
+    blacklistFile: TextIO = open('blacklist.log', 'r')
+    failureDict: dict[str, dict[str, int]] | None = getTimeoutDictFromLogFile(requestLog)
+    if failureDict is None:
+        print('no failure dict found')
         return None
-    logBlacklist: dict[str, set[str]] | None = buildBlackListFromFailureDicts(failureDicts)
+    logBlacklist: dict[str, set[str]] | None = buildBlackListFromFailureDict(failureDict)
     prevBlacklist: dict[str, set[str]] | None = reconstituteBlacklist(blacklistFile)
 
     if logBlacklist is None and prevBlacklist is None:
+        'blacklist reconstitute failed'
         return None
     elif logBlacklist is None:
         logBlacklist = {}

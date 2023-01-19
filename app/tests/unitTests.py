@@ -23,7 +23,7 @@ from ..DBInterface import DBInterface
 from ..RequestHub import RequestHub
 from ..loggers.RequestLogger import RequestLogger
 from ..loggers.ScrapeLogger import ScrapeLogger
-from ..utils.requestUtils import getFailureDictsFromLogFile, buildBlackListFromFailureDicts, buildBlacklist
+from ..utils.requestUtils import getTimeoutDictFromLogFile, buildBlacklist
 
 from ..Zillow.ZillowListingService import ZillowListingService
 from ..Zillow.ZillowUrlService import ZillowUrlService
@@ -409,7 +409,7 @@ def testUrlBuilders() -> bool:
 
 def runQueryOnProvider(query: Query, providerName: str, scrapeLimit: int | None = None):
     blacklist: dict[str, set[str]] | None = buildBlacklist()
-    print(blacklist)
+    # print(blacklist)
 
     scrapeLog: TextIO = open('scrapeLog.log', 'w+')
     requestLog: TextIO = open('requestLog.log', 'w+')
@@ -575,5 +575,6 @@ def getTestQuery(locStr: str) -> Query | None:
 
 def testLogFileRead():
     file: TextIO = open('requestLog.log', 'r')
-    print(getFailureDictsFromLogFile(file))
+    print(getTimeoutDictFromLogFile(file))
+    file.seek(0, 0)
     file.close()

@@ -12,9 +12,9 @@ if __name__ == '__main__':
     # # print(testNYCQuery())
     # print(testUrlBuilders())
 
-    testLogFileRead()
+    # testLogFileRead()
 
-    testQuery: Query | None = getTestQuery('Seattle, WA')
-    providerName: str = 'airbnb'
+    testQuery: Query | None = getTestQuery('New York City, NY')
+    providerName: str = 'rent.com'
     if testQuery is not None:
-        runQueryOnProvider(testQuery, providerName)
+        runQueryOnProvider(testQuery, providerName, 4)

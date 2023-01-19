@@ -14,6 +14,8 @@ class RequestLogger:
         self.blacklistFile: TextIO | None = None
 
     def addBlacklist(self, blacklist: dict[str, set[str]], writeLoc: TextIO | None):
+        print('adding blacklist')
+        print(blacklist)
         self.userAgentBlacklist = blacklist
         self.blacklistFile = writeLoc
 
@@ -79,7 +81,9 @@ class RequestLogger:
         self.logFile.write("generic failure breakdown:\n")
         self.logFile.write(f'{str(self.genericFailures)}\n')
 
+        print('blacklist ' + str(self.userAgentBlacklist))
         if self.blacklistFile is not None and self.userAgentBlacklist is not None:
+            print('writing blacklist file')
             self.blacklistFile.write(json.dumps(self.encodeBlackList(self.userAgentBlacklist)))
 
         
