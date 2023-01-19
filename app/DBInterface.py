@@ -22,8 +22,8 @@ class DBInterface:
     def getListingUrlsByProvider(self) -> list[dict[str, str]]:
         return list(self.listingsCol.find({}, {'_id': 1, 'providerName': 1, 'url': 1, 'scrapeTime': 1}))
 
-    def getListingsCullingInfo(self) -> list[dict[str, str]]:
-        return list(self.listingsCol.find({}, {'_id': 1, 'providerName': 1, 'url': 1, 'scrapeTime': 1, 'price': 1}))
+    def getListingsCullingInfo(self) -> list[dict[str, Any]]:
+        return list(self.listingsCol.find())
 
     def addListing(self, listing: Listing):
         return self.listingsCol.insert_one(listing.toJson())

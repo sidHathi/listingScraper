@@ -417,8 +417,9 @@ def runQueryOnProvider(query: Query, providerName: str, scrapeLimit: int | None 
     requestLogger: RequestLogger = RequestLogger(requestLog)
     dbInterface: DBInterface = DBInterface()
     requestHub: RequestHub = RequestHub(requestLogger)
+    blacklistLog: TextIO | None = None
     if blacklist is not None:
-        blacklistLog: TextIO = open('blacklist.log', 'w+')
+        blacklistLog = open('blacklist.log', 'w+')
         requestLogger.addBlacklist(blacklist, blacklistLog)
         requestHub.addBlacklist(blacklist)
 
@@ -548,6 +549,8 @@ def runQueryOnProvider(query: Query, providerName: str, scrapeLimit: int | None 
     requestLogger.dumpLogs()
     scrapeLog.close()
     requestLog.close()
+    if blacklistLog is not None:
+        blacklistLog.close()
 
 def getTestQuery(locStr: str) -> Query | None:
     geocoder = GoogleV3(api_key=config['GOOGLE_MAPS_API_KEY'])

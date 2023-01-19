@@ -1,15 +1,17 @@
-from ..models.CullingModel import CullingModel
-from ..DBInterface import DBInterface
-from ..utils.scrapingUtils import htmlPull, followTagMap
-from ..models.TagModel import TagModel
-from ..RequestHub import RequestHub
-
 import asyncio
 from datetime import datetime, timedelta
 from typing import Coroutine, Any
 from bs4 import BeautifulSoup
 from undetected_chromedriver import Chrome as uChrome
 from selenium.webdriver.chrome.options import Options as ChromeOptions
+
+from ..models.CullingModel import CullingModel
+from ..DBInterface import DBInterface
+from ..utils.scrapingUtils import htmlPull, followTagMap
+from ..models.TagModel import TagModel
+from ..models.Listing import Listing
+from ..RequestHub import RequestHub
+from ..utils.ListingFlagger import ListingFlagger
 
 expirationTimeInDays = 10
 
@@ -19,10 +21,11 @@ class Culler:
         self.dbInterface: DBInterface = dbInterface
         self.requestHub = requestHub
 
-        self.dbUrlNamePairs: list[dict[str, Any]] | None = None
+        self.rawListings: list[dict[str, Any]] | None = None
+        self.listingFlagger: ListingFlagger = ListingFlagger()
 
-    def getDbUrls(self):
-        self.dbUrlNamePairs = self.dbInterface.getListingsCullingInfo()
+    def getListings(self):
+        self.rawListings = self.dbInterface.getListingsCullingInfo()
 
     def checkListingIsExpired(self, provider: str, url: str) -> bool:
         if provider in self.cullingModels:
@@ -53,26 +56,25 @@ class Culler:
                     return True
         return False
 
-    async def cullExpiredListings(self):
-        if self.dbUrlNamePairs is None:
-            self.getDbUrls()
-        assert self.dbUrlNamePairs is not None
+    async def cullListings(self):
+        if self.rawListings is None:
+            self.getListings()
+        assert self.rawListings is not None
 
         unexpiredPairs: list[dict[str, Any]] = []
-        for pair in self.dbUrlNamePairs:
-            assert 'scrapeTime' in pair
-            assert 'providerName' in pair
-            assert 'price' in pair
-            provider = pair['providerName']
+        for raw in self.rawListings:
+            assert 'scrapeTime' in raw
+            assert 'providerName' in raw
+            assert 'price' in raw
+            # provider = pair['providerName']
             currentTime = datetime.today()
-            timeDif: timedelta = currentTime - pair['scrapeTime']
-            price = pair['price']
-            if timeDif.days > expirationTimeInDays or price < 0:
-                assert '_id' in pair
-                print(f'deleting {pair}')
-                self.dbInterface.removeListing(pair['_id'])
+            timeDif: timedelta = currentTime - raw['scrapeTime']
+            if timeDif.days > expirationTimeInDays or not self.listingFlagger.checkValidListing(raw):
+                assert '_id' in raw
+                print(f'deleting {raw}')
+                self.dbInterface.removeListing(raw['_id'])
             else:
-                unexpiredPairs.append(pair)
+                unexpiredPairs.append(raw)
 
         cullList: list[bool] = []
         for pair in unexpiredPairs:
@@ -82,7 +84,7 @@ class Culler:
         
         for i in range(len(cullList)):
             if cullList[i]:
-                culpritListingPair = self.dbUrlNamePairs[i]
-                assert '_id' in culpritListingPair
-                print(f'deleting {culpritListingPair}')
-                self.dbInterface.removeListing(culpritListingPair['_id'])
+                culpritListing = self.rawListings[i]
+                assert '_id' in culpritListing
+                print(f'deleting {culpritListing}')
+                self.dbInterface.removeListing(culpritListing['_id'])

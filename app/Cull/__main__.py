@@ -55,7 +55,7 @@ async def main():
     requestHub: RequestHub = RequestHub()
     culler: Culler = Culler(cullingMap, dbInterface, requestHub)
 
-    await culler.cullExpiredListings()
+    await culler.cullListings()
 
 if (__name__ == '__main__'):
     sys.exit(asyncio.run(main()))

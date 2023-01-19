@@ -1,11 +1,12 @@
 from typing import TextIO, Any
 
 from ..enums import ListingField
-
+from ..utils.ListingFlagger import ListingFlagger
 class ScrapeLogger:
     def __init__(self, file: TextIO | None = None):
         self.store: dict[str, dict[ListingField, str | None]] = {}
         self.logFile: TextIO | None = file
+        self.listingFlagger: ListingFlagger = ListingFlagger()
 
     def addEvent(self, url: str, field: ListingField, parsedData: str | None):
         if url not in self.store:
@@ -14,19 +15,13 @@ class ScrapeLogger:
         self.store[url][field] = parsedData
 
     def isPriceValid(self, price: int) -> bool:
-        if price < 0 or price < 500 or price > 10000:
-            return False
-        return True
+        return self.listingFlagger.checkValidPrice(price)
     
     def isBedroomsValid(self, bedrooms: list[int]) -> bool:
-        if len(bedrooms) < 2 or bedrooms[0] > 4 or bedrooms[1] > 4:
-            return False
-        return True
+        return self.listingFlagger.checkValidBedrooms(bedrooms)
     
     def isShortestLeaseValid(self, val: int) -> bool:
-        if val < 0 or val > 24:
-            return False
-        return True
+        return self.listingFlagger.checkValidLeaseTerm(val)
 
     def checkVal(self, url: str, field: ListingField, parsedData: Any):
         match field:
