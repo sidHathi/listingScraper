@@ -2,9 +2,12 @@ from typing import TextIO
 import json
 from urllib.parse import urlparse
 
+from ..metrics.MetricsController import MetricsController
+
 class RequestLogger:
-    def __init__(self, logFile: TextIO | None = None):
+    def __init__(self, logFile: TextIO | None = None, metricsController: MetricsController | None = None):
         self.logFile = logFile
+        self.metricsController: MetricsController | None = metricsController
         self.webDriverFailures: dict[str, dict[str, int]] = {}
         self.timeoutFailures: dict[str, dict[str, int]] = {}
         self.genericFailures: dict[str, dict[str, int]] = {}
@@ -28,6 +31,16 @@ class RequestLogger:
 
     def addFailureToDict(self, dict: dict[str, dict[str, int]], userAgent: str, url: str, proxyUse: bool):
         domain: str = urlparse(url).netloc
+        if self.metricsController is not None:
+            failureType: str = 'unknown'
+            if dict is self.webDriverFailures:
+                failureType = 'webdriver'
+            if dict is self.timeoutFailures:
+                failureType = 'timeout'
+            if dict is self.genericFailures:
+                failureType = 'generic'
+            self.metricsController.logFailure(domain, proxyUse, failureType)
+
         if self.userAgentBlacklist is not None:
             if domain not in self.userAgentBlacklist:
                 self.userAgentBlacklist[domain] = set()
@@ -53,7 +66,10 @@ class RequestLogger:
     def logGenericFailure(self, userAgent: str, url: str, proxyUse: bool):
         self.addFailureToDict(self.genericFailures, userAgent, url, proxyUse)
 
-    def logSuccess(self, userAgent: str, url: str):
+    def logSuccess(self, userAgent: str, url: str, proxyUse: bool):
+        domain: str = urlparse(url).netloc
+        if self.metricsController is not None:
+            self.metricsController.logSuccess(domain, proxyUse)
         self.initializeWebdriverDict(self.timeoutFailures, userAgent, url)
         self.initializeWebdriverDict(self.webDriverFailures, userAgent, url)
         self.initializeWebdriverDict(self.genericFailures, userAgent, url)

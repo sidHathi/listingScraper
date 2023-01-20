@@ -128,7 +128,7 @@ class RequestHub:
 
             print('successful scrape')
             if self.requestLogger is not None:
-                self.requestLogger.logSuccess(userAgent, url)
+                self.requestLogger.logSuccess(userAgent, url, proxy)
             # browser.maximize_window()
             html: str = browser.page_source
             browser.close()

@@ -1,12 +1,16 @@
 from typing import TextIO, Any
+from urllib.parse import urlparse
 
 from ..enums import ListingField
 from ..utils.ListingFlagger import ListingFlagger
+from ..metrics.MetricsController import MetricsController
+
 class ScrapeLogger:
-    def __init__(self, file: TextIO | None = None):
+    def __init__(self, file: TextIO | None = None, metricsController: MetricsController | None = None):
         self.store: dict[str, dict[ListingField, str | None]] = {}
         self.logFile: TextIO | None = file
         self.listingFlagger: ListingFlagger = ListingFlagger()
+        self.metricsController = metricsController
 
     def addEvent(self, url: str, field: ListingField, parsedData: str | None):
         if url not in self.store:
@@ -24,18 +28,25 @@ class ScrapeLogger:
         return self.listingFlagger.checkValidLeaseTerm(val)
 
     def checkVal(self, url: str, field: ListingField, parsedData: Any):
+        domain: str = urlparse(url).netloc
         match field:
             case ListingField.Price:
                 if not self.isPriceValid(parsedData):
                     self.addEvent(url, field, parsedData)
+                    if self.metricsController is not None:
+                        self.metricsController.logSuspectParse(domain)
                     return
             case ListingField.Bedrooms:
                 if not self.isBedroomsValid(parsedData):
                     self.addEvent(url, field, parsedData)
+                    if self.metricsController is not None:
+                        self.metricsController.logSuspectParse(domain)
                     return
             case ListingField.ShortestLease:
                 if not self.isShortestLeaseValid(parsedData):
                     self.addEvent(url, field, parsedData)
+                    if self.metricsController is not None:
+                        self.metricsController.logSuspectParse(domain)
                     return
             case _:
                 return

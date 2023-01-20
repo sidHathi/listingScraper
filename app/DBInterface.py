@@ -1,13 +1,14 @@
 from pymongo import MongoClient
 from dotenv import dotenv_values
 from .models.Listing import Listing
+from .metrics.models.ScrapeMetrics import ScrapeMetrics
 from typing import Any
 
 config = dotenv_values(".env")
 
 class DBInterface:
     def __init__(self):
-        if config["ATLAS_URI"] is None or config["DB_NAME"] is None or config['LISTINGS_COLLECTION_NAME'] is None or config['MIGRATIONS_COLLECTION_NAME'] is None or config['QUERIES_COLLECTION_NAME'] is None:
+        if config["ATLAS_URI"] is None or config["DB_NAME"] is None or config['LISTINGS_COLLECTION_NAME'] is None or config['MIGRATIONS_COLLECTION_NAME'] is None or config['QUERIES_COLLECTION_NAME'] is None or config['METRICS_COLLECTION_NAME'] is None:
             raise Exception("env variables not configured")
         
         client = MongoClient(str(config['ATLAS_URI']))
@@ -15,6 +16,7 @@ class DBInterface:
         self.listingsCol = self.db[config['LISTINGS_COLLECTION_NAME']]
         self.migrationsCol = self.db[config['MIGRATIONS_COLLECTION_NAME']]
         self.queriesCol = self.db[config['QUERIES_COLLECTION_NAME']]
+        self.metricsCol = self.db[config['METRICS_COLLECTION_NAME']]
 
     def getListingUrls(self) -> list[dict[str, str]]:
         return list(self.listingsCol.find({}, {'_id': 1, 'url': 1, 'scrapeTime': 1}))
@@ -65,3 +67,5 @@ class DBInterface:
     def getCompleteListingDicts(self) -> list[dict[str, Any]]:
         return list(self.listingsCol.find())
 
+    def logScrapeMetrics(self, metrics: ScrapeMetrics):
+        return self.metricsCol.insert_one(metrics.dict())

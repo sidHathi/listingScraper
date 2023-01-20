@@ -24,6 +24,7 @@ from ..RequestHub import RequestHub
 from ..loggers.RequestLogger import RequestLogger
 from ..loggers.ScrapeLogger import ScrapeLogger
 from ..utils.requestUtils import getTimeoutDictFromLogFile, buildBlacklist
+from ..metrics.MetricsController import MetricsController
 
 from ..Zillow.ZillowListingService import ZillowListingService
 from ..Zillow.ZillowUrlService import ZillowUrlService
@@ -408,14 +409,14 @@ def testUrlBuilders() -> bool:
     return True
 
 def runQueryOnProvider(query: Query, providerName: str, scrapeLimit: int | None = None):
+    dbInterface: DBInterface = DBInterface()
     blacklist: dict[str, set[str]] | None = buildBlacklist()
-    # print(blacklist)
+    metricsController: MetricsController = MetricsController(dbInterface)
 
     scrapeLog: TextIO = open('scrapeLog.log', 'w+')
     requestLog: TextIO = open('requestLog.log', 'w+')
-    scrapeLogger: ScrapeLogger = ScrapeLogger(scrapeLog)
-    requestLogger: RequestLogger = RequestLogger(requestLog)
-    dbInterface: DBInterface = DBInterface()
+    scrapeLogger: ScrapeLogger = ScrapeLogger(scrapeLog, metricsController)
+    requestLogger: RequestLogger = RequestLogger(requestLog, metricsController)
     requestHub: RequestHub = RequestHub(requestLogger)
     blacklistLog: TextIO | None = None
     if blacklist is not None:
@@ -549,6 +550,7 @@ def runQueryOnProvider(query: Query, providerName: str, scrapeLimit: int | None 
     requestLogger.dumpLogs()
     scrapeLog.close()
     requestLog.close()
+    metricsController.pushMetrics()
     if blacklistLog is not None:
         blacklistLog.close()
 

@@ -63,6 +63,8 @@ class Scraper:
         
         baseHtml = self.requestHub.executeRequest(url, self.parsingModel.targetTag, self.scrapeWithProxy and query.hasProxyPermission, self.scrapeHeadlessly)
         if baseHtml is None:
+            if self.scrapeLogger is not None and self.scrapeLogger.metricsController is not None:
+                self.scrapeLogger.metricsController.logFubarEvent('Search page scrape failure on query: ' + str(query)) 
             self.searchHtmlPages = []
             return
 
