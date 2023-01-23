@@ -31,6 +31,8 @@ async def main() -> None:
     requestLogger.dumpLogs()
     scrapeLogFile.close()
     requestLogFile.close()
+    metricsController.pushMetrics()
+    blacklistLogFile.close()
     
 
 if (__name__ == '__main__'):
