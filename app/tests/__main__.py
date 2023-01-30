@@ -15,6 +15,6 @@ if __name__ == '__main__':
     # testLogFileRead()
 
     testQuery: Query | None = getTestQuery('New York City, NY')
-    providerName: str = 'rent.com'
+    providerName: str = 'zillow'
     if testQuery is not None:
-        runQueryOnProvider(testQuery, providerName, 4)
+        runQueryOnProvider(testQuery, providerName, 10)
