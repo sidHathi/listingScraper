@@ -440,7 +440,7 @@ def runQueryOnProvider(query: Query, providerName: str, scrapeLimit: int | None 
         parsingModel=airbnbParsingModel, 
         dbInterface = dbInterface, 
         requestHub=requestHub,
-        scrapeWithProxy=False,
+        scrapeWithProxy=True,
         scrapeHeadlessly=False,
         scrapeLogger=scrapeLogger,
         scrapeLimit=scrapeLimit
@@ -484,7 +484,7 @@ def runQueryOnProvider(query: Query, providerName: str, scrapeLimit: int | None 
         parsingModel=zillowParsingModel, 
         dbInterface = dbInterface, 
         requestHub=requestHub,
-        scrapeWithProxy=False,
+        scrapeWithProxy=True,
         scrapeHeadlessly=False,
         scrapeLogger=scrapeLogger,
         scrapeLimit=scrapeLimit
@@ -528,7 +528,7 @@ def runQueryOnProvider(query: Query, providerName: str, scrapeLimit: int | None 
         parsingModel=fbmParsingModel, 
         dbInterface = dbInterface, 
         requestHub=requestHub,
-        scrapeWithProxy=False,
+        scrapeWithProxy=True,
         scrapeHeadlessly=False,
         scrapeLogger=scrapeLogger,
         scrapeLimit=scrapeLimit
