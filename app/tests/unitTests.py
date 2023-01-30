@@ -572,7 +572,7 @@ def getTestQuery(locStr: str) -> Query | None:
         leaseDuration=12,
         pets=False,
         transit=False,
-        hasProxyPermission=False)
+        hasProxyPermission=True)
     return testQuery
 
 def testLogFileRead():
