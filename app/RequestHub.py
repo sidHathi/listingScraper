@@ -28,7 +28,7 @@ requestTimeout: int = 10
 config = dotenv_values('.env')
 
 class RequestHub:
-    def __init__(self, requestLogger: RequestLogger | None = None) -> None:
+    def __init__(self, requestLogger: RequestLogger | None = None, fixedUserAgent: str | None = None) -> None:
         assert config['PROXY_AVAILABLE'] is not None
         print('rqh initializing')
         software_names: list[str] = [SoftwareName.CHROME.value]
@@ -43,6 +43,7 @@ class RequestHub:
         self.prox.ssl_proxy = proxyUrl
         self.requestLogger: RequestLogger | None = requestLogger
         self.user_agent_blacklist: dict[str, set[str]] | None = None
+        self.fixed_user_agent: str | None = fixedUserAgent
 
         match config['PROXY_AVAILABLE']:
             case 'yes':
@@ -61,6 +62,9 @@ class RequestHub:
             if self.user_agent_blacklist is not None and domain in self.user_agent_blacklist:
                 while userAgent in self.user_agent_blacklist[domain]:
                     userAgent = self.user_agent_rotator.get_random_user_agent()
+
+            if self.fixed_user_agent is not None:
+                userAgent = self.fixed_user_agent
 
             try:
                 opts = Options()

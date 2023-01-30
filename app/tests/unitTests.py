@@ -408,7 +408,7 @@ def testUrlBuilders() -> bool:
     print(url)
     return True
 
-def runQueryOnProvider(query: Query, providerName: str, scrapeLimit: int | None = None):
+def runQueryOnProvider(query: Query, providerName: str, scrapeLimit: int | None = None, fixedUserAgent: str | None = None):
     dbInterface: DBInterface = DBInterface()
     blacklist: dict[str, set[str]] | None = buildBlacklist()
     metricsController: MetricsController = MetricsController(dbInterface)
@@ -417,7 +417,7 @@ def runQueryOnProvider(query: Query, providerName: str, scrapeLimit: int | None 
     requestLog: TextIO = open('requestLog.log', 'w+')
     scrapeLogger: ScrapeLogger = ScrapeLogger(scrapeLog, metricsController)
     requestLogger: RequestLogger = RequestLogger(requestLog, metricsController)
-    requestHub: RequestHub = RequestHub(requestLogger)
+    requestHub: RequestHub = RequestHub(requestLogger, fixedUserAgent)
     blacklistLog: TextIO | None = None
     if blacklist is not None:
         blacklistLog = open('blacklist.log', 'w+')
